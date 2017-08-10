@@ -31,7 +31,7 @@ export default {
   // PUT /:id/:secret
   updateBundle: {
     body: {
-      keys: Bundle.keys.required(),
+      files: Bundle.files.required(),
     },
     params: {
       id: Bundle.id.required(),

@@ -57,10 +57,10 @@ export default {
       },
       ConditionExpression: "secret = :secret",
       ExpressionAttributeNames: {
-        '#attrName': 'keys',
+        '#attrName': 'files',
       },
       ExpressionAttributeValues: {
-        ':newKeys': value.keys,
+        ':newKeys': value.files,
         ':secret': value.secret,
       },
       UpdateExpression: 'SET #attrName = list_append(#attrName, :newKeys)',

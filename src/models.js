@@ -32,7 +32,7 @@ const Bundle = {
   secret: Joi
     .string()
     .default(getUUID, 'random secret'),
-  keys: Joi
+  files: Joi
     .array()
     .unique()
     .default([])

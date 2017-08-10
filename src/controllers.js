@@ -33,7 +33,7 @@ const bundleCtrl = {
   },
 
   /**
-   * Append keys to bundle
+   * Append files to bundle
    * @returns {Bundle}
    */
   update: (req, res, next) => {
@@ -53,7 +53,7 @@ const bundleCtrl = {
   },
 
   /**
-   * Stream zip of keys
+   * Stream zip of files
    * @returns {Stream}
    */
   download: (req, res, next) => {
@@ -79,11 +79,11 @@ const bundleCtrl = {
 
         // Remove duplicates
         let cache = new Map();
-        for ( const {base, path, dest} of val.keys ) {
+        for ( const {base, path, dest} of val.files ) {
           if (!cache.has(base)) cache.set(base, []);
           // TODO: Fixup to new object style key
-          let keys = cache.get(base);
-          if (!keys.some(v => v.path == path)) keys.push({ path, dest })
+          let files = cache.get(base);
+          if (!files.some(v => v.path == path)) files.push({ path, dest })
         }
 
         // Enqueue streams
