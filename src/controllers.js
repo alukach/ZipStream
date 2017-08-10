@@ -11,8 +11,11 @@ const bundleCtrl = {
    * Create new bundle
    * @returns {Bundle}
    */
-   create: (req, res, next) => {
-    const {err, value} = Joi.validate({filename: req.body.filename}, Bundle);
+  create: (req, res, next) => {
+    let body = req.body;
+    delete body['id'];
+    delete body['secret'];
+    const {err, value} = Joi.validate(body, Bundle);
     if (err) throw new Error(`Config validation err: ${err.message}`);
     return db.create(value)
       .then(val => res.status(201).json(val))
