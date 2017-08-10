@@ -66,10 +66,10 @@ const bundleCtrl = {
         if (err.code === 'ENOENT') {
             console.warn(err)
         } else {
-            throw err;
+            next(err);
         }
       })
-      .on('error', err => { throw err })
+      .on('error', err => { next(err) })
       .pipe(res);
 
     return db.read(Object.assign(req.body, req.params), false)
@@ -93,12 +93,11 @@ const bundleCtrl = {
               .getStream(base, path)
               .on('error', function(err) {
                 console.error(
-                  `${req.params.id}: ` +
+                  `${val.id}: ` +
                   `READSTREAM error: "${err.message}", ` +
                   `base: ${base}, ` +
                   `path: ${path}`
                 );
-                next(err);
               })
             archive.append(data, { name: dest || path });
           }
