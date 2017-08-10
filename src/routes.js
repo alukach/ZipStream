@@ -28,7 +28,7 @@ router.route('/:id/:secret')
     validate(paramValidation.protectedReadBundle),
     bundleCtrl.read)
 
-  /** PUT /api/bundles/:id - Append to a bundle */
+  /** PUT /:id/:secret - Append to a bundle */
   .put(
     validate(paramValidation.updateBundle),
     bundleCtrl.update)

@@ -1,5 +1,5 @@
 {
-  "name": "s3-zipstream-server",
+  "name": "zipstream-service",
   "version": "1.0.0",
   "description": "A service to create and stream zipped S3 downloads to a user.",
   "main": "src/index.js",
