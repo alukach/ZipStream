@@ -1,6 +1,6 @@
 # ZipStream Service
 
-A backend-swappable microservice to build and stream dynamically zipped bundles of remote files. The service never actually stores files, rather it stores references to files which it can stream in a zipped package to users.
+A microservice to build and stream dynamically zipped bundles of remote files. The service never actually stores files, rather it stores references to files which it can stream in a zipped package to users. Designed to be backend-swappable, it is capable of working with just about any database and any filestore.
 
 ## Use case
 
@@ -299,7 +299,7 @@ JSON representation of deleted bundle.
 
 > Why isn't this written an AWS Lambda service?
 
-This service would indeed be a great use-case for AWS Lambda. In fact, we initially began building it out as a [Serverless](serverless.com) app. Ultimately, Lambda's 5 minute max-lifetime turned us off the idea as we cater towards clients in remote low-bandwidth regions where a 5+ minute download is indeed likely to be needed. However, if you're interesting in running this codebase on AWS Lambda, [we'd love to hear how it goes!](https://github.com/Cadasta/ZipStream-Service/issues/7)
+This service would indeed be a good use case for AWS Lambda. In fact, we initially began building it out as a [Serverless](serverless.com) app. Ultimately, Lambda's 5 minute max-lifetime turned us off of the idea as we cater towards clients in remote, low-bandwidth regions where a 5+ minute download is likely. If you're interesting in running this codebase on AWS Lambda, [we'd love to hear how it goes!](https://github.com/Cadasta/ZipStream-Service/issues/7)
 
 ## Contributing
 
