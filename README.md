@@ -1,9 +1,12 @@
 # ZipStream Service
 
-A backend-swappable service to build and stream zipped bundles of remote files. The service never actually stores files, rather it stores references to files which it can stream in a zipped package to users.
+A backend-swappable microservice to build and stream dynamically zipped bundles of remote files. The service never actually stores files, rather it stores references to files which it can stream in a zipped package to users.
 
+## Use case
 
-## Supported Backends
+Imagine you store thousands of files on Amazon S3 for a client. The client occasionally asks that you make a subset of their files available for download. A very simple solution to this would have you manually download these files, bundle them up as a zip file, upload the zipped to S3, and send a link to your client. ZipStream aims to simplify this by allowing you to send references to these files to a ZipStream Service and send your client a link to the ZipStream bundle. The zip won't actually be generated until your client clicks on the link. Naturally, if the zipped bundle is to be downloaded many times over, it's likely more efficient to actually generate the zip file once, store it in a filestore, and send the client a link to that file. In this case, ZipStream may still be of use for the one-time generation of the to-be-shared zip file (ie a script could stream the zip from ZipStream to the filestore).
+
+## Supported backends
 
 The system relies on two backend types: Database and Filestore.
 
@@ -292,5 +295,21 @@ JSON representation of deleted bundle.
 }
 ```
 
+## FAQ
+
+> Why isn't this written an AWS Lambda service?
+
+This service would indeed be a great use-case for AWS Lambda. In fact, we initially began building it out as a [Serverless](serverless.com) app. Ultimately, Lambda's 5 minute max-lifetime turned us off the idea as we cater towards clients in remote low-bandwidth regions where a 5+ minute download is indeed likely to be needed. However, if you're interesting in running this codebase on AWS Lambda, [we'd love to hear how it goes!](https://github.com/Cadasta/ZipStream-Service/issues/7)
+
+## Contributing
+
+Pull Requests are very welcome! If you would like to add a new feature, it is recommended that you create an Issue to first discuss the idea, however this is not mandatory.
+
+## Attributions
+
+Inspired by [Teamwork's s3zipper].
+
+
 [`FileRef`]: #fileref
 [`Bundle`]: #bundle
+[Teamwork's s3zipper]: https://github.com/Teamwork/s3zipper
