@@ -26,13 +26,11 @@ describe('## APIs', () => {
     "filename" : "my-awesome-bundle.zip",
     "files": [
       {
-        "base": "my-aws-bucket-1",
-        "path": "path/to/foo.jpg",
-        "dest": "foo.jpg"
+        "src": "s3://my-aws-bucket-1/path/to/foo.jpg",
+        "dst": "foo.jpg"
       },
       {
-        "base": "some-other-bucket-2",
-        "path": "bar.gif"
+        "src": "s3://some-other-bucket-2/bar.gif"
       }
     ],
     "id" : "my-long-id"
@@ -139,22 +137,25 @@ describe('## APIs', () => {
 
     it('should return zipped bundle', (done) => {
       db.read.resolves(exampleBundle);
-      var s = new Readable();
-      s.push('A stream of data');
-      s.push(null);
-      fs.getStream.returns(s);
+
+      var stubStream = new Readable();
+      stubStream.push('A stream of data');
+      stubStream.push(null);
+      fs.getStream.returns(stubStream);
+
+      const expectedDbReads = [
+        [ { id: exampleBundle.id }, false ]
+      ];
+
+      const expectedStreamLookups = [
+        [ exampleBundle.files[0].src ],
+        [ exampleBundle.files[1].src ],
+      ];
 
       request(app)
         .get(`/${exampleBundle.id}`)
         .expect(httpStatus.OK)
         .then((res) => {
-          const expectedDbReads = [
-            [ { id: exampleBundle.id }, false ]
-          ];
-          const expectedStreamLookups = [
-            [ exampleBundle.files[0].base, exampleBundle.files[0].path ],
-            [ exampleBundle.files[1].base, exampleBundle.files[1].path ],
-          ];
           expect(db.read.args)
             .to.deep.equal(expectedDbReads);
           expect(fs.getStream.args)
@@ -205,13 +206,15 @@ describe('## APIs', () => {
 
     it('should return bundle with good \'id\' and \'secret\' arguments', (done) => {
       db.read.resolves(exampleBundle);
+
+      const expectedDbRead = [
+          { id: exampleBundle.id, secret: exampleBundle.secret }
+      ];
+
       request(app)
         .get(`/${exampleBundle.id}/${exampleBundle.secret}`)
         .expect(httpStatus.OK)
         .then((res) => {
-          const expectedDbRead = [
-              { id: exampleBundle.id, secret: exampleBundle.secret }
-          ];
           expect(db.read.args.length)
             .to.equal(1);
           expect(db.read.firstCall.args)
@@ -225,13 +228,15 @@ describe('## APIs', () => {
 
     it('should handle bad combinations w/ 404', (done) => {
       db.read.rejects(NotFound);
+
+      const expectedDbReads = [
+        { id: 'abcd', secret: 'efgh' }
+      ];
+
       request(app)
         .get('/abcd/efgh')
         .expect(httpStatus.NOT_FOUND)
         .then((res) => {
-          const expectedDbReads = [
-            { id: 'abcd', secret: 'efgh' }
-          ];
           expect(db.read.args.length)
             .to.equal(1);
           expect(db.read.firstCall.args)
@@ -255,18 +260,20 @@ describe('## APIs', () => {
 
     it('should append to \'files\' array', (done) => {
       db.update.resolves(exampleBundle);
+
+      const expectedDbUpdates = [
+        {
+          files: exampleBundle.files,
+          id: exampleBundle.id,
+          secret: exampleBundle.secret,
+        }
+      ];
+
       request(app)
         .put(`/${exampleBundle.id}/${exampleBundle.secret}`)
         .send({ files: exampleBundle.files })
         .expect(httpStatus.OK)
         .then((res) => {
-          const expectedDbUpdates = [
-            {
-              files: exampleBundle.files,
-              id: exampleBundle.id,
-              secret: exampleBundle.secret,
-            }
-          ];
           expect(db.update.firstCall.args.length)
             .to.equal(1);
           expect(db.update.firstCall.args)
@@ -288,16 +295,18 @@ describe('## APIs', () => {
 
     it('should instruct DB to delete', (done) => {
       db.delete.resolves(exampleBundle);
+
+      const expectedDbDelete = [
+        {
+          id: exampleBundle.id,
+          secret: exampleBundle.secret,
+        }
+      ];
+
       request(app)
         .delete(`/${exampleBundle.id}/${exampleBundle.secret}`)
         .expect(httpStatus.OK)
         .then((res) => {
-          const expectedDbDelete = [
-            {
-              id: exampleBundle.id,
-              secret: exampleBundle.secret,
-            }
-          ];
           expect(db.delete.firstCall.args.length)
             .to.equal(1);
           expect(db.delete.firstCall.args)
@@ -309,16 +318,18 @@ describe('## APIs', () => {
 
     it('should handle bad combinations w/ 404', (done) => {
       db.delete.rejects(NotFound);
+
+      const expectedDbDelete = [
+        {
+          id: 'abcd',
+          secret: 'efgh',
+        }
+      ];
+
       request(app)
         .delete('/abcd/efgh')
         .expect(httpStatus.NOT_FOUND)
         .then((res) => {
-          const expectedDbDelete = [
-            {
-              id: 'abcd',
-              secret: 'efgh',
-            }
-          ];
           expect(db.delete.args.length)
             .to.equal(1);
           expect(db.delete.firstCall.args)

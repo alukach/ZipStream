@@ -1,3 +1,4 @@
+import { parse } from 'url';
 import Joi from 'joi';
 import archiver from 'archiver';
 
@@ -75,29 +76,31 @@ const bundleCtrl = {
         res.attachment(val.filename);
         res.contentType("application/octet-stream")
 
-        // Remove duplicates
-        let cache = new Map();
-        for ( const {base, path, dest} of val.files ) {
-          if (!cache.has(base)) cache.set(base, []);
-          let files = cache.get(base);
-          if (!files.some(v => v.path == path)) files.push({ path, dest })
+        // Remove files that repeat earlier `dst` values
+        let files = new Map();
+        for ( let {src, dst} of val.files ) {
+          if (!dst) {
+            dst = parse(src).path;
+          }
+          if (!files.has(dst)) {
+              files.set(dst, src)
+          }
         }
 
         // Enqueue streams
-        for ( const [base, files] of cache ) {
-          for ( const {path, dest} of files ) {
-            let data = fs
-              .getStream(base, path)
-              .on('error', function(err) {
-                console.error(
-                  `${val.id}: ` +
-                  `READSTREAM error: "${err.message}", ` +
-                  `base: ${base}, ` +
-                  `path: ${path}`
-                );
-              })
-            archive.append(data, { name: dest || path });
-          }
+        for ( const [dst, src] of files ) {
+          // TODO: Support multiple backend types
+          let data = fs
+            .getStream(src)
+            .on('error', function(err) {
+              console.error(
+                `${val.id}: ` +
+                `READSTREAM error: "${err.message}", ` +
+                `src: ${src}, ` +
+                `dst: ${dst}`
+              );
+            })
+          archive.append(data, { name: dst });
         }
         archive.finalize();
       })

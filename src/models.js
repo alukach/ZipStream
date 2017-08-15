@@ -4,13 +4,10 @@ import { getExpirationDate, getUUID } from './helpers/fields';
 
 
 const FileRef = Joi.object().keys({
-  base: Joi
+  src: Joi
     .string()
     .required(),
-  path: Joi
-    .string()
-    .required(),
-  dest: Joi
+  dst: Joi
     .string()
 });
 
