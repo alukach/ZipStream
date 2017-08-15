@@ -29,11 +29,11 @@ export default {
   }),
 
 
-  read: (value, checkPass = true) => new Promise((resolve, reject) => {
+  read: ({id, secret}, checkPass = true) => new Promise((resolve, reject) => {
     const params = {
       TableName: config.TABLE_NAME,
       Key: {
-        id: value.id,
+        id: id,
       }
     };
     dynamoDb.get(params, (err, data) => {
@@ -41,7 +41,7 @@ export default {
       if (!Object.keys(data).length) return reject(NotFound);
 
       data = data['Item'];
-      if (checkPass && data.secret != value.secret) {
+      if (checkPass && data.secret != secret) {
         return reject(NotFound)
       }
       return resolve(data)
@@ -49,39 +49,38 @@ export default {
   }),
 
 
-  update: (value) => new Promise((resolve, reject) => {
+  update: ({id, secret, files}) => new Promise((resolve, reject) => {
     const params = {
       TableName: config.TABLE_NAME,
       Key: {
-        id: value.id,
+        id: id,
       },
       ConditionExpression: "secret = :secret",
       ExpressionAttributeNames: {
         '#attrName': 'files',
       },
       ExpressionAttributeValues: {
-        ':newKeys': value.files,
-        ':secret': value.secret,
+        ':newKeys': files,
+        ':secret': secret,
       },
       UpdateExpression: 'SET #attrName = list_append(#attrName, :newKeys)',
       ReturnValues: 'ALL_NEW',
     };
     dynamoDb.update(params, (err, data) => {
-      console.log(err)
       err ? reject(formatError(err)) : resolve(data['Attributes']);
     });
   }),
 
 
-  delete: (value) => new Promise((resolve, reject) => {
+  delete: ({id, secret}) => new Promise((resolve, reject) => {
     const params = {
       TableName: config.TABLE_NAME,
       Key: {
-        id: value.id,
+        id: id,
       },
       ConditionExpression: "secret = :secret",
       ExpressionAttributeValues: {
-        ':secret': value.secret,
+        ':secret': secret,
       },
       ReturnValues: 'ALL_OLD',
     };

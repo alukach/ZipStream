@@ -2,9 +2,7 @@ import Joi from 'joi';
 import archiver from 'archiver';
 
 import { Bundle } from './models';
-import config from './config/config';
-import db from './backends/db';
-import fs from './backends/fs';
+import { db, fs } from './backends';
 
 const bundleCtrl = {
   /**
@@ -27,7 +25,7 @@ const bundleCtrl = {
    * @returns {Bundle}
    */
   read: (req, res, next) => {
-    return db.read(Object.assign(req.body, req.params))
+    return db.read(req.params)
       .then(val => res.json(val))
       .catch(next)
   },
@@ -47,7 +45,7 @@ const bundleCtrl = {
    * @returns {Bundle}
    */
   delete: (req, res, next) => {
-    return db.delete(Object.assign(req.body, req.params))
+    return db.delete(req.params)
       .then(val => res.json(val))
       .catch(next)
   },
@@ -72,7 +70,7 @@ const bundleCtrl = {
       .on('error', err => { next(err) })
       .pipe(res);
 
-    return db.read(Object.assign(req.body, req.params), false)
+    return db.read(req.params, false)
       .then(val => {
         res.attachment(val.filename);
         res.contentType("application/octet-stream")
@@ -81,7 +79,6 @@ const bundleCtrl = {
         let cache = new Map();
         for ( const {base, path, dest} of val.files ) {
           if (!cache.has(base)) cache.set(base, []);
-          // TODO: Fixup to new object style key
           let files = cache.get(base);
           if (!files.some(v => v.path == path)) files.push({ path, dest })
         }
