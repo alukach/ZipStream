@@ -7,7 +7,7 @@ function getExpirationDate() {
   const lifetime = config.DATA_LIFETIME * 60
   let expirationDate = new Date();
   expirationDate.setSeconds(expirationDate.getSeconds() + lifetime);
-  return Math.floor(expirationDate.getTime() / 1000)
+  return expirationDate
 }
 
 function getUUID() {

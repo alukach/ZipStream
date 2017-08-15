@@ -14,7 +14,10 @@ const envVarsSchema = Joi.object({
   DB_INTERFACE: Joi.string()
     .default('dynamodb'),
   FS_INTERFACES: Joi.string()
-    .default('s3,https'),
+    .default('s3, https'),
+
+  DB_NAME: Joi.string()
+    .default('zipstream'),
   TABLE_NAME: Joi.string()
     .default('zipstream-bundles'),
   DATA_LIFETIME: Joi.number()  // in minutes

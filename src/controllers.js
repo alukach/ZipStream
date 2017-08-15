@@ -89,8 +89,12 @@ const bundleCtrl = {
 
         // Enqueue streams
         for ( const [dst, src] of files ) {
-          const _interface = parse(src).protocol.split(':')[0]
-          let data = fs[_interface]
+          const protocol = parse(src).protocol.split(':')[0];
+          const _interface = fs[protocol];
+          if (_interface === null) {
+            // throw 400
+          }
+          let data = _interface
             .getStream(src)
             .on('error', function(err) {
               console.error(

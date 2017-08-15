@@ -1,16 +1,18 @@
+import { parse } from 'url';
+
 import AWS from 'aws-sdk';
 
 import config from '../../config/config';
-import { NotFound } from '../../helpers/errors';
 
 AWS.config.region = config.AWS_REGION;
-const s3 = new AWS.S3({apiVersion: '2006-03-01'});
+const s3 = new AWS.S3();
 
 export default {
-  getStream(bucket, key) {
-    let params = { Bucket: bucket, Key: key };
+  getStream(src) {
+    let bucket = parse(src).host;
+    let key = parse(src).path;
     return s3
-      .getObject(params)
+      .getObject({ Bucket: bucket, Key: key })
       .createReadStream();
   }
 }
