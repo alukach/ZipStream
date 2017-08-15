@@ -89,8 +89,8 @@ const bundleCtrl = {
 
         // Enqueue streams
         for ( const [dst, src] of files ) {
-          // TODO: Support multiple backend types
-          let data = fs
+          const _interface = parse(src).protocol.split(':')[0]
+          let data = fs[_interface]
             .getStream(src)
             .on('error', function(err) {
               console.error(

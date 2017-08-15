@@ -127,12 +127,12 @@ describe('## APIs', () => {
 
     beforeEach(() => {
       sinon.stub(db, "read");
-      sinon.stub(fs, "getStream");
+      sinon.stub(fs['s3'], "getStream");
     });
 
     afterEach(() => {
       db.read.restore();
-      fs.getStream.restore();
+      fs['s3'].getStream.restore();
     });
 
     it('should return zipped bundle', (done) => {
@@ -141,7 +141,7 @@ describe('## APIs', () => {
       var stubStream = new Readable();
       stubStream.push('A stream of data');
       stubStream.push(null);
-      fs.getStream.returns(stubStream);
+      fs['s3'].getStream.returns(stubStream);
 
       const expectedDbReads = [
         [ { id: exampleBundle.id }, false ]
@@ -158,7 +158,7 @@ describe('## APIs', () => {
         .then((res) => {
           expect(db.read.args)
             .to.deep.equal(expectedDbReads);
-          expect(fs.getStream.args)
+          expect(fs['s3'].getStream.args)
             .to.deep.equal(expectedStreamLookups);
           expect(res.text)
             .to.include('PK\u0003\u0004\u0014\u0000\b\u0000\b\u0000');

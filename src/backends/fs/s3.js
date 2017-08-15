@@ -3,6 +3,7 @@ import AWS from 'aws-sdk';
 import config from '../../config/config';
 import { NotFound } from '../../helpers/errors';
 
+AWS.config.region = config.AWS_REGION;
 const s3 = new AWS.S3({apiVersion: '2006-03-01'});
 
 export default {

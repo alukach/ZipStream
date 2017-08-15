@@ -7,9 +7,7 @@ const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
 
 function formatError(err) {
-  if (err.code == "ConditionalCheckFailedException") {
-    return NotFound
-  }
+  if (err.code == "ConditionalCheckFailedException") return NotFound;
   err.status = err.statusCode;
   return err
 }
@@ -41,9 +39,7 @@ export default {
       if (!Object.keys(data).length) return reject(NotFound);
 
       data = data['Item'];
-      if (checkPass && data.secret != secret) {
-        return reject(NotFound)
-      }
+      if (checkPass && data.secret != secret) return reject(NotFound);
       return resolve(data)
     });
   }),
