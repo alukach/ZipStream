@@ -23,7 +23,11 @@ export default class PostgresDb {
   }
 
   create(val) {
-    return this.db.none(this.sql.create, val);
+    return new Promise((resolve, reject) => {
+      this.db.none(this.sql.create, val).then(() => {
+        resolve(val)
+      });
+    });
   }
 
   read({id, secret = null}, checkPass = true) {
@@ -35,7 +39,18 @@ export default class PostgresDb {
       })
   }
 
-  // update
+  update(val) {
+    console.log(val);
+    return this.db.one(this.sql.update, val)
+      .catch(err => {
+        throw this.formatError(err);
+      })
+  }
 
-  // delete
+  delete(val) {
+    return this.db.one(this.sql.delete, val)
+      .catch(err => {
+        throw this.formatError(err);
+      })
+  }
 }

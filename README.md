@@ -1,6 +1,7 @@
 # ZipStream Service
 
-A microservice to build and stream dynamically zipped bundles of remote files. The service does not store files, rather it stores references to files which it can stream in a zipped package to users. Designed to be backend-swappable, it is capable of working with just about any database and any filestore. It aims to be fast, have a low memory footprint, and to support a tens-of-thousands of concurrent connections <sup>[[citation needed]](https://github.com/Cadasta/ZipStream/issues/8)</sup>.
+A microservice to build and stream dynamically zipped bundles of remote files. The service does not store files, rather it stores references to files which it can stream in a zipped package to users. Designed to be backend-swappable, it is capable of working with just about any database and any filestore. It aims to be fast, have a low memory footprint, and to support tens-of-thousands of concurrent connections <sup>[[citation needed]](https://github.com/Cadasta/ZipStream/issues/8)</sup>.
+
 
 ## Use case
 
@@ -26,7 +27,7 @@ To see what's on the database backends radar, see our [Issues](https://github.co
 
 The filestore backend is responsible for returning files in a [Readable stream](https://nodejs.org/api/stream.html#stream_readable_streams) format.
 
-To add support for a new filestore backend, a file should be placed in the `backends/fs` directory and offer a single function: `getStream`. This functino should take in a `base` and `path` argument and return a readable stream.
+To add support for a new filestore backend, a file should be placed in the `backends/fs` directory and offer a single function: `getStream`. This functino should take in a `src` argument and return a readable stream.
 
 #### Currently supported filestore backends:
 
@@ -39,9 +40,8 @@ To see what's on the filestore backends radar, see our [Issues](https://github.c
 
 ### `FileRef`
 
-- `base`: `String`, base directory or base location of file (depending on backend), such as S3 Bucket
-- `path`: `String`, path to file, relative to base value
-- `dest`: `String`, _optional_, desired path of file when in bundle, defaults to `path` value
+- `src`: `String`, protocol and location of file (depending on backend), such as S3 Bucket
+- `dst`: `String`, _optional_, desired path of file when in bundle, defaults to `path` value
 
 ### `Bundle`
 
@@ -53,6 +53,54 @@ To see what's on the filestore backends radar, see our [Issues](https://github.c
 
 
 ## Usage
+
+### One-off Zip Creation
+
+Returns a bundle of provided files.
+
+**URL** : `/bundle`
+
+**Method** : `POST`
+
+**Data constraints**
+
+```json
+{
+    "files": [
+        {
+            "src": "[protocol and location of file (depending on backend), such as S3 Bucket]",
+            "dst": "[optional, desired path of file when in bundle, defaults to 'path' value ]"
+        }
+    ]
+}
+```
+
+**Data example**
+
+```json
+{
+    "files": [
+        {
+            "src": "s3://my-aws-bucket-1/path/to/foo.jpg",
+            "dst": "foo.jpg"
+        },
+        {
+            "src": "s3://some-other-bucket-2/bar.gif"
+        }
+    ]
+}
+```
+
+#### Success Response
+
+
+Streaming download of zipped bundle.
+
+**Code** : `200 OK`
+
+_Download of bundle containing `foo.jpg` and `bar.gif`._
+
+
 
 ### Create Bundle
 
@@ -77,9 +125,8 @@ Or, optionally:
     "filename": "[desired filename of bundle]",
     "files": [
         {
-            "base": "[base directory or base location of file (depending on backend), such as S3 Bucket]",
-            "path": "[path to file, relative to base value]",
-            "dest": "[optional, desired path of file when in bundle, defaults to 'path' value ]"
+            "src": "[protocol and location of file (depending on backend), such as S3 Bucket]",
+            "dst": "[optional, desired path of file when in bundle, defaults to 'path' value ]"
         }
     ]
 }
@@ -92,13 +139,11 @@ Or, optionally:
     "filename": "`",
     "files": [
         {
-            "base": "my-aws-bucket-1",
-            "path": "path/to/foo.jpg",
-            "dest": "foo.jpg"
+            "src": "s3://my-aws-bucket-1/path/to/foo.jpg",
+            "dst": "foo.jpg"
         },
         {
-            "base": "some-other-bucket-2",
-            "path": "bar.gif"
+            "src": "s3://some-other-bucket-2/bar.gif"
         }
     ]
 }
@@ -119,13 +164,11 @@ JSON representation of created bundle.
    "filename" : "my-awesome-bundle.zip",
     "files": [
         {
-            "base": "my-aws-bucket-1",
-            "path": "path/to/foo.jpg",
-            "dest": "foo.jpg"
+            "src": "s3://my-aws-bucket-1/path/to/foo.jpg",
+            "dst": "foo.jpg"
         },
         {
-            "base": "some-other-bucket-2",
-            "path": "bar.gif"
+            "src": "s3://some-other-bucket-2/bar.gif"
         }
    ],
    "id" : "c4f6f218-afc4-4af1-ae1b-b22e9b058f26"
@@ -171,13 +214,11 @@ JSON representation of retrieved bundle.
    "filename" : "my-awesome-bundle.zip",
     "files": [
         {
-            "base": "my-aws-bucket-1",
-            "path": "path/to/foo.jpg",
-            "dest": "foo.jpg"
+            "src": "s3://my-aws-bucket-1/path/to/foo.jpg",
+            "dst": "foo.jpg"
         },
         {
-            "base": "some-other-bucket-2",
-            "path": "bar.gif"
+            "src": "s3://some-other-bucket-2/bar.gif"
         }
    ],
    "id" : "c4f6f218-afc4-4af1-ae1b-b22e9b058f26"
@@ -198,9 +239,8 @@ Append files a bundle.
 {
     "files": [
         {
-            "base": "[base directory or base location of file (depending on backend), such as S3 Bucket]",
-            "path": "[path to file, relative to base value]",
-            "dest": "[optional, desired path of file when in bundle, defaults to 'path' value ]"
+            "src": "[protocol and location of file (depending on backend), such as S3 Bucket]",
+            "dst": "[optional, desired path of file when in bundle, defaults to 'path' value ]"
         }
     ]
 }
@@ -213,9 +253,8 @@ Append files a bundle.
     "filename": "`",
     "files": [
         {
-            "base": "one-more-bucket-3",
-            "path": "another/file.pdf",
-            "dest": "another-one.pdf"
+            "src": "s3://one-more-bucket-3/another/file.pdf",
+            "dst": "another-one.pdf"
         }
     ]
 }
@@ -236,18 +275,15 @@ JSON representation of bundle with newly-appended data.
    "filename" : "my-awesome-bundle.zip",
     "files": [
         {
-            "base": "my-aws-bucket-1",
-            "path": "path/to/foo.jpg",
-            "dest": "foo.jpg"
+            "src": "s3://my-aws-bucket-1/path/to/foo.jpg",
+            "dst": "foo.jpg"
         },
         {
-            "base": "some-other-bucket-2",
-            "path": "bar.gif"
+            "src": "s3://some-other-bucket-2/bar.gif"
         },
         {
-            "base": "one-more-bucket-3",
-            "path": "another/file.pdf",
-            "dest": "another-one.pdf"
+            "src": "s3://one-more-bucket-3/another/file.pdf",
+            "dst": "another-one.pdf"
         }
    ],
    "id" : "c4f6f218-afc4-4af1-ae1b-b22e9b058f26"
@@ -277,18 +313,15 @@ JSON representation of deleted bundle.
    "filename" : "my-awesome-bundle.zip",
     "files": [
         {
-            "base": "my-aws-bucket-1",
-            "path": "path/to/foo.jpg",
-            "dest": "foo.jpg"
+            "src": "s3://my-aws-bucket-1/path/to/foo.jpg",
+            "dst": "foo.jpg"
         },
         {
-            "base": "some-other-bucket-2",
-            "path": "bar.gif",
+            "src": "s3://some-other-bucket-2/bar.gif",
         },
         {
-            "base": "one-more-bucket-3",
-            "path": "another/file.pdf",
-            "dest": "another-one.pdf"
+            "src": "s3://one-more-bucket-3/another/file.pdf",
+            "dst": "another-one.pdf"
         }
    ],
    "id" : "c4f6f218-afc4-4af1-ae1b-b22e9b058f26"
@@ -413,7 +446,7 @@ Get code coverage summary on executing `yarn test`
 
 > Why isn't this written an AWS Lambda service?
 
-This service would indeed be a good use case for AWS Lambda. In fact, we initially began building it out as a [Serverless](serverless.com) app. Ultimately, Lambda's 5 minute max-lifetime turned us off of the idea as we cater towards clients in remote, low-bandwidth regions where a 5+ minute download is likely. If you're interesting in running this codebase on AWS Lambda, [we'd love to hear how it goes!](https://github.com/Cadasta/ZipStream/issues/7)
+This service would indeed be a good use case for AWS Lambda. In fact, we initially began building it out as a [Serverless](http://serverless.com) app. Ultimately, Lambda's 5 minute max-lifetime turned us off of the idea as we cater towards clients in remote, low-bandwidth regions where a 5+ minute download is likely. If you're interesting in running this codebase on AWS Lambda, [we'd love to hear how it goes!](https://github.com/Cadasta/ZipStream/issues/7)
 
 ## Contributing
 

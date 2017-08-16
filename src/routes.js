@@ -16,6 +16,12 @@ router.route('/')
     validate(paramValidation.createBundle),
     bundleCtrl.create);
 
+router.route('/bundle')
+  /** POST / - Create new bundle */
+  .post(
+    validate(paramValidation.instantDownloadBundle),
+    bundleCtrl.bundle);
+
 router.route('/:id')
   /** GET /:id - Download zip of bundle */
   .get(

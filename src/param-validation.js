@@ -8,6 +8,13 @@ export default {
     },
   },
 
+  // POST /bundle
+  instantDownloadBundle: {
+    body: {
+      files: Bundle.files.required(),
+    },
+  },
+
   // GET /:id
   downloadBundle: {
     body: {

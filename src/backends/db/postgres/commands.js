@@ -22,5 +22,7 @@ export default function generateCommands(table_name) {
     create: sql('./sql/create.sql'),
     fetch: sql('./sql/fetch.sql'),
     fetchWithSecret: sql('./sql/fetch_w_secret.sql'),
+    update: sql('./sql/update.sql'),
+    delete: sql('./sql/delete.sql'),
   }
 }
