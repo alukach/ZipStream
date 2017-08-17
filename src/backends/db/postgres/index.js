@@ -4,14 +4,22 @@ import pgPromise from 'pg-promise';
 import { QueryFile } from 'pg-promise';
 import { queryResultErrorCode } from 'pg-promise/lib/errors';
 
-import generateCommands from './commands'
+
+function sqlLoader(table_name, file, params = {}) {
+  const fullPath = path.join(__dirname, file);
+  const options = {
+    minify: true,
+    params: { table: table_name },
+  };
+  return new QueryFile(fullPath, options);
+}
 
 
 export default class PostgresDb {
   constructor(config, errors) {
     const pgp = pgPromise();
     this.db = pgp({database: config.DB_NAME});
-    this.sql = generateCommands(config.TABLE_NAME)
+    this.sql = sqlLoader.bind(this, config.TABLE_NAME)
     this.errors = errors;
   }
 
@@ -24,14 +32,16 @@ export default class PostgresDb {
 
   create(val) {
     return new Promise((resolve, reject) => {
-      this.db.none(this.sql.create, val).then(() => {
+      this.db.none(this.sql('./sql/create.sql'), val).then(() => {
         resolve(val)
       });
     });
   }
 
   read({id, secret = null}, checkPass = true) {
-    const sql = checkPass ? this.sql.fetchWithSecret : this.sql.fetch;
+    const sql = checkPass ?
+      this.sql('./sql/fetch_w_secret.sql') :
+      this.sql('./sql/fetch.sql');
     const params = Object.assign({ id }, checkPass ? { secret } : { } );
     return this.db.one(sql, params)
       .catch(err => {
@@ -40,15 +50,14 @@ export default class PostgresDb {
   }
 
   update(val) {
-    console.log(val);
-    return this.db.one(this.sql.update, val)
+    return this.db.one(this.sql('./sql/update.sql'), val)
       .catch(err => {
         throw this.formatError(err);
       })
   }
 
   delete(val) {
-    return this.db.one(this.sql.delete, val)
+    return this.db.one(this.sql('./sql/delete.sql'), val)
       .catch(err => {
         throw this.formatError(err);
       })
