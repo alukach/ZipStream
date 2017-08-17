@@ -5,7 +5,49 @@ A microservice to build and stream dynamically zipped bundles of remote files. T
 
 ## Use case
 
-Imagine that you store thousands of files on Amazon S3 for a client. The client occasionally asks you to make a subset of their files available for download. A simple solution to this would be to manually download these files, bundle them up as a zip file, upload the zip file to S3, and send a link of zip on S3 to your client. ZipStream aims to simplify this by allowing you to submit references of the client's files to ZipStream and send your client a link the bundle's identifier. When your client visits the link, a zip file of the S3 assets will be generated on the fly and streamed to the user. Naturally, if the zipped bundle is to be downloaded many times over, it's likely more efficient to actually generate the zip file once, store it in a filestore, and send the client a link to that file. In this case, ZipStream may still be of use for the one-time generation of the to-be-shared zip file (ie a script could stream the zip from ZipStream to the filestore).
+Imagine that you store thousands of files on Amazon S3 for a client. The client occasionally asks you to make a subset of their files available for download. A simple solution to this would be to manually download these files, bundle them up as a zip file, upload the zip file to S3, and send a link of zip on S3 to your client. ZipStream aims to simplify this by allowing you to submit references of the client's files to ZipStream and send your client a link the bundle's identifier. When your client visits the link, a zip file of the S3 assets will be generated on the fly and streamed to the user.
+
+Naturally, if the zipped bundle is to be downloaded many times over, it's likely more efficient to actually generate the zip file once, store it in a filestore, and send the client a link to that file. In this case, it would be better to use ZipStream's `/bundle` endpoint for a one-time generation of the to-be-shared zip file. This could be done efficiently via streaming from one service to the other:
+
+```js
+var AWS = require('aws-sdk');
+var s3Stream = require('s3-upload-stream');
+var request = require('request');
+
+// Define s3-upload-stream with S3 credentials.
+var awsConn = new AWS.S3({
+  accessKeyId: '',
+  secretAccessKey: ''
+});
+
+// Establish input stream
+var inStream = request({
+  url: 'https://myZipstreamServer.com/bundle',
+  method: 'POST',
+  json: {
+    files: [
+      {
+        src: 'https://i.imgur.com/CMMdGGX.jpg',
+        dst: 'rock-collection.jpg'
+      }
+    ]
+  }
+});
+
+// Establish output stream
+var outStream = s3Stream(awsConn)
+  .upload({
+    'Bucket': 'myBucket',
+    'Key': 'my-key.zip'
+  })
+  .on('error', function (err) {
+    console.error(err);
+  });
+
+// Send it
+inStream.pipe(outStream)
+```
+
 
 ## Supported backends
 
