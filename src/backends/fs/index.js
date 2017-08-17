@@ -12,7 +12,7 @@ for (const _interface of _interfaces) {
   // Ensure non-ssl protocols will be handled by https interface
   if (_interface === 'https') {
     FS_INTERFACES.http = FS_INTERFACES.https;
-    console.debug("Setup 'http' interface");
+    winston.debug("Setup 'http' interface");
   }
 }
 export default FS_INTERFACES;
