@@ -21,7 +21,7 @@ chai.config.includeStack = true;
 
 describe('## APIs', () => {
   const exampleBundle = {
-    "expirationDate" : 1503029550,
+    "expirationDate" : '2017-08-24T17:33:35.961Z',
     "secret" : "my-secret",
     "filename" : "my-awesome-bundle.zip",
     "files": [
@@ -37,6 +37,8 @@ describe('## APIs', () => {
   };
 
   describe('# POST /', () => {
+    const ENDPOINT = '/'
+
     beforeEach(() => {
       sinon.stub(db, "create");
     });
@@ -49,7 +51,7 @@ describe('## APIs', () => {
       db.create.resolves(exampleBundle);
 
       request(app)
-        .post(`/`)
+        .post(ENDPOINT)
         .send({ filename: exampleBundle.filename })
         .expect(httpStatus.CREATED)
         .then((res) => {
@@ -66,7 +68,7 @@ describe('## APIs', () => {
 
     it('should require \'filename\' argument', (done) => {
       request(app)
-        .post(`/`)
+        .post(ENDPOINT)
         .send({})
         .expect(httpStatus.BAD_REQUEST)
         .then((res) => {
@@ -77,11 +79,22 @@ describe('## APIs', () => {
         .catch(done);
     });
 
+    // it('TEST config override', (done) => {
+    //   let config = require('../config/config');
+    //   config.FS_INTERFACES = 's3'
+
+    //   let module = '../backends/fs';
+    //   delete require.cache[require.resolve(module)];
+    //   let fs = require(module);
+
+    //   done()
+    // });
+
     it('should override \'id\' and \'secret\' arguments', (done) => {
       db.create.resolves(exampleBundle);
 
       request(app)
-        .post(`/`)
+        .post(ENDPOINT)
         .send(exampleBundle)
         .expect(httpStatus.CREATED)
         .then((res) => {
@@ -102,25 +115,132 @@ describe('## APIs', () => {
           expect(db.create.firstCall.args[0].filename)
             .to.equal(exampleBundle.filename);
           expect(db.create.firstCall.args[0].expirationDate)
-            .to.equal(exampleBundle.expirationDate);
+            .to.be.a('date')
           done();
         })
         .catch(done);
     });
 
-    // TODO
-    // it('should not allow bad \'files\' entry', (done) => {
-    //   db.create.resolves(exampleBundle);
-    //   request(app)
-    //     .post(`/`)
-    //     .send({ filename: exampleBundle.filename, files: 1 })
-    //     .expect(httpStatus.BAD_REQUEST)
-    //     .then((res) => {
-    //       console.log(res.body);
-    //       done();
-    //     })
-    //     .catch(done);
-    // });
+    it('should not allow bad \'files\' entry', (done) => {
+      db.create.resolves(exampleBundle);
+      request(app)
+        .post(ENDPOINT)
+        .send({ filename: exampleBundle.filename, files: 1 })
+        .expect(httpStatus.BAD_REQUEST)
+        .then((res) => {
+          done();
+        })
+        .catch(done);
+    });
+
+    it('should handle bad \'files\' argument', (done) => {
+      request(app)
+        .post(ENDPOINT)
+        .send({ files: 1, filename: 'asdf.zip' })
+        .expect(httpStatus.BAD_REQUEST)
+        .then((res) => {
+          expect(res.body)
+            .to.deep.equal({ message: '"files" must be an array' })
+          done();
+        })
+        .catch(done);
+    });
+
+    it('should handle bad \'files\' argument', (done) => {
+      request(app)
+        .post(ENDPOINT)
+        .send({ files: [{}], filename: 'asdf.zip' })
+        .expect(httpStatus.BAD_REQUEST)
+        .then((res) => {
+          expect(res.body)
+            .to.deep.equal({ message: '"src" is required' })
+          done();
+        })
+        .catch(done);
+    });
+  });
+
+  describe('# POST /bundle', () => {
+    const ENDPOINT = '/bundle'
+
+    beforeEach(() => {
+      sinon.stub(db, "read");
+      sinon.stub(fs['s3'], "getStream");
+    });
+
+    afterEach(() => {
+      db.read.restore();
+      fs['s3'].getStream.restore();
+    });
+
+    it('should return zipped bundle', (done) => {
+      var stubStream = new Readable();
+      stubStream.push('A stream of data');
+      stubStream.push(null);
+      fs['s3'].getStream.returns(stubStream);
+
+      const expectedStreamLookups = [
+        [ exampleBundle.files[0].src ],
+        [ exampleBundle.files[1].src ],
+      ];
+
+      request(app)
+        .post(ENDPOINT)
+        .send({ files: exampleBundle.files })
+        .expect(httpStatus.OK)
+        .then((res) => {
+          expect(db.read.args.length)
+            .to.equal(0);
+          expect(fs['s3'].getStream.args)
+            .to.deep.equal(expectedStreamLookups);
+          expect(res.text)
+            .to.include('PK\u0003\u0004\u0014\u0000\b\u0000\b\u0000');
+          expect(res.text)
+            .to.include('foo.jpg');
+          expect(res.text)
+            .to.include('bar.gif');
+          done();
+        })
+        .catch(done);
+    });
+
+    it('should handle missing arguments', (done) => {
+      request(app)
+        .post(ENDPOINT)
+        .expect(httpStatus.BAD_REQUEST)
+        .then((res) => {
+          expect(res.body)
+            .to.deep.equal({ message: '"files" is required' })
+          done();
+        })
+        .catch(done);
+    });
+
+    it('should handle bad \'files\' argument', (done) => {
+      request(app)
+        .post(ENDPOINT)
+        .send({ files: 1 })
+        .expect(httpStatus.BAD_REQUEST)
+        .then((res) => {
+          expect(res.body)
+            .to.deep.equal({ message: '"files" must be an array' })
+          done();
+        })
+        .catch(done);
+    });
+
+    it('should handle bad \'files\' argument', (done) => {
+      request(app)
+        .post(ENDPOINT)
+        .send({ files: [{}] })
+        .expect(httpStatus.BAD_REQUEST)
+        .then((res) => {
+          expect(res.body)
+            .to.deep.equal({ message: '"src" is required' })
+          done();
+        })
+        .catch(done);
+    });
   });
 
   describe('# GET /:id', () => {

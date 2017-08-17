@@ -42,8 +42,10 @@ function getStreamResponse(res, {files, filename = '', id}) {
     for ( const [dst, src] of filesMap ) {
       const protocol = parse(src).protocol.split(':')[0];
       const _interface = fs[protocol];
-      if (_interface === null) {
-        // TODO: throw 400
+      if (_interface === undefined) {
+        return res.status(400).json({
+          message: `Protocol '${protocol}' not supported.`
+        });
       }
       let data = _interface
         .getStream(src)
@@ -73,13 +75,11 @@ const bundleCtrl = {
     let body = req.body;
     delete body['id'];
     delete body['secret'];
-    const {err, value} = Joi.validate(body, Bundle);
-    if (err) throw new Error(`Config validation err: ${err.message}`);
+    delete body['expirationDate'];
+    const {error, value} = Joi.validate(body, Bundle);
+    if (error) throw new Error(`Config validation error: ${error.message}`);
     return db.create(value)
-      .then(val => {
-        console.log(val);
-        res.status(201).json(val);
-      })
+      .then(val => res.status(201).json(val))
       .catch(next)
   },
 
@@ -136,4 +136,4 @@ const bundleCtrl = {
   },
 }
 
-export default { bundleCtrl }
+export default { bundleCtrl, getStreamResponse }

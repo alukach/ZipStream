@@ -5,6 +5,7 @@ export default {
   createBundle: {
     body: {
       filename: Bundle.filename.required(),
+      files: Bundle.files,
     },
   },
 
