@@ -80,9 +80,9 @@ if (config.NODE_ENV !== 'test') {
 app.use((err, req, res, next) => // eslint-disable-line no-unused-vars
   res.status(err.status).json(
     Object.assign(
-      {message: err.isPublic ? err.message : httpStatus[err.status]},
+      { message: err.isPublic ? err.message : httpStatus[err.status] },
       // Add stack in dev
-      config.NODE_ENV === 'development' ? {stack: err.stack} : {}
+      config.NODE_ENV === 'development' ? { stack: err.stack } : {}
     )
   )
 );

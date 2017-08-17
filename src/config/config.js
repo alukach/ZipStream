@@ -1,4 +1,3 @@
-import AWS from 'aws-sdk';
 import Joi from 'joi';
 
 // require and configure dotenv, will load vars in .env in PROCESS.ENV
@@ -14,8 +13,11 @@ const envVarsSchema = Joi.object({
 
   DB_INTERFACE: Joi.string()
     .default('dynamodb'),
-  FS_INTERFACE: Joi.string()
-    .default('s3'),
+  FS_INTERFACES: Joi.string()
+    .default('s3, https'),
+
+  DB_NAME: Joi.string()
+    .default('zipstream'),
   TABLE_NAME: Joi.string()
     .default('zipstream-bundles'),
   DATA_LIFETIME: Joi.number()  // in minutes
@@ -26,12 +28,11 @@ const envVarsSchema = Joi.object({
 }).required();
 
 const config = Joi.validate(
-  process.env, envVarsSchema, {stripUnknown: true},
+  process.env, envVarsSchema, { stripUnknown: true },
   (err, value) => {
-  if (err) throw new Error(`Config validation error: ${err.message}`);
-
-  AWS.config.region = value.AWS_REGION;
-  return value
-});
+    if (err) throw new Error(`Config validation error: ${err.message}`);
+    return value;
+  }
+);
 
 export default config;

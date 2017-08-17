@@ -1,3 +1,6 @@
 import config from '../../config/config';
+import errors from '../../helpers/errors';
 
-export default require('./' + config.DB_INTERFACE)
+const DbInterface = require(`./${config.DB_INTERFACE}`);
+
+export default new DbInterface(config, errors);

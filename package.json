@@ -39,6 +39,8 @@
     "lazy-modules": "^1.0.0",
     "method-override": "^2.3.9",
     "morgan": "^1.8.2",
+    "pg-promise": "^6.4.0",
+    "request": "^2.81.0",
     "uuid": "^3.1.0",
     "winston": "^2.3.1"
   },
@@ -69,6 +71,7 @@
     "istanbul": "1.1.0-alpha.1",
     "mocha": "3.2.0",
     "run-sequence": "^1.1.5",
+    "sinon": "^3.2.0",
     "supertest": "2.0.1",
     "supertest-as-promised": "4.0.2",
     "validate-commit-msg": "^2.6.1"

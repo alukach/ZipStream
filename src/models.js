@@ -4,13 +4,10 @@ import { getExpirationDate, getUUID } from './helpers/fields';
 
 
 const FileRef = Joi.object().keys({
-  base: Joi
+  src: Joi
     .string()
     .required(),
-  path: Joi
-    .string()
-    .required(),
-  dest: Joi
+  dst: Joi
     .string()
 });
 
@@ -32,6 +29,6 @@ const Bundle = {
     .default(getExpirationDate, 'expiration date'),
   filename: Joi
     .string()
-}
+};
 
-export default { FileRef, Bundle }
+export default { FileRef, Bundle };
