@@ -104,8 +104,8 @@ To add support for a new filestore backend, a file should be placed in the `back
 
 #### Currently supported filestore backends:
 
-- Amazon S3
-- HTTPS
+- [Amazon S3](https://aws.amazon.com/s3/)
+- HTTP(S) - Any valid URL
 
 To see what's on the filestore backends radar, see our [Issues](https://github.com/Cadasta/ZipStream/issues?q=is%3Aopen+label%3Aenhancement+label%3Afilestore).
 
