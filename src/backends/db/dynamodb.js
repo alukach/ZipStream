@@ -1,3 +1,4 @@
+/* eslint no-param-reassign: ["error", { "props": false }] */
 import AWS from 'aws-sdk';
 
 
@@ -10,11 +11,11 @@ export default class DynamoDb {
   }
 
   formatError(err) {
-    if (err.code == "ConditionalCheckFailedException") {
+    if (err.code === 'ConditionalCheckFailedException') {
       return this.errors.NotFound;
     }
     err.status = err.statusCode;
-    return err
+    return err;
   }
 
   create(value) {
@@ -23,45 +24,41 @@ export default class DynamoDb {
         TableName: this.table,
         Item: value,
       };
-      value.expirationDate = Math.floor(value.expirationDate.getTime() / 1000)
+      value.expirationDate = Math.floor(value.expirationDate.getTime() / 1000);
       this.dynamoDb.put(params, (err, data) => {
         if (err) return reject(err);
-        return resolve(value)
+        return resolve(data.Attributes);
       });
     });
   }
 
-  read({id, secret}, checkPass = true) {
+  read({ id, secret }, checkPass = true) {
     return new Promise((resolve, reject) => {
       const params = {
         TableName: this.table,
-        Key: {
-          id: id,
-        }
+        Key: { id }
       };
       this.dynamoDb.get(params, (err, data) => {
-        if (err ) return reject(this.formatError(err));
+        if (err) return reject(this.formatError(err));
         if (!Object.keys(data).length) {
           return reject(this.errors.NotFound);
         }
 
-        data = data['Item'];
-        if (checkPass && data.secret != secret) {
+        const item = data.Item;
+        if (checkPass && item.secret !== secret) {
           return reject(this.errors.NotFound);
         }
-        return resolve(data)
+        return resolve(item);
       });
     });
   }
 
-  update({id, secret, files}) {
+  update({ id, secret, files }) {
     return new Promise((resolve, reject) => {
       const params = {
         TableName: this.table,
-        Key: {
-          id: id,
-        },
-        ConditionExpression: "secret = :secret",
+        Key: { id },
+        ConditionExpression: 'secret = :secret',
         ExpressionAttributeNames: {
           '#attrName': 'files',
         },
@@ -72,28 +69,26 @@ export default class DynamoDb {
         UpdateExpression: 'SET #attrName = list_append(#attrName, :newKeys)',
         ReturnValues: 'ALL_NEW',
       };
-      this.dynamoDb.update(params, (err, data) => {
-        err ? reject(this.formatError(err)) : resolve(data['Attributes']);
-      });
+      this.dynamoDb.update(params, (err, data) => (
+        err ? reject(this.formatError(err)) : resolve(data.Attributes)
+      ));
     });
   }
 
-  delete({id, secret}) {
+  delete({ id, secret }) {
     return new Promise((resolve, reject) => {
       const params = {
         TableName: this.table,
-        Key: {
-          id: id,
-        },
-        ConditionExpression: "secret = :secret",
+        Key: { id },
+        ConditionExpression: 'secret = :secret',
         ExpressionAttributeValues: {
           ':secret': secret,
         },
         ReturnValues: 'ALL_OLD',
       };
-      this.dynamoDb.delete(params, (err, data) => {
-        err ? reject(this.formatError(err)) : resolve(data['Attributes']);
-      });
+      this.dynamoDb.delete(params, (err, data) => (
+        err ? reject(this.formatError(err)) : resolve(data.Attributes)
+      ));
     });
   }
 }

@@ -9,10 +9,10 @@ const s3 = new AWS.S3();
 
 export default {
   getStream(src) {
-    let bucket = parse(src).host;
-    let key = parse(src).path;
+    const bucket = parse(src).host;
+    const key = parse(src).path;
     return s3
       .getObject({ Bucket: bucket, Key: key })
       .createReadStream();
   }
-}
+};

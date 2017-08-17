@@ -29,6 +29,6 @@ const Bundle = {
     .default(getExpirationDate, 'expiration date'),
   filename: Joi
     .string()
-}
+};
 
-export default { FileRef, Bundle }
+export default { FileRef, Bundle };

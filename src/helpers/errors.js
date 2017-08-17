@@ -32,6 +32,6 @@ class APIError extends ExtendableError {
 }
 
 const NotFound = new APIError(
-  "No bundle found matching provided id and secret", httpStatus.NOT_FOUND);
+  'No bundle found matching provided id and secret', httpStatus.NOT_FOUND);
 
 export default { APIError, NotFound };

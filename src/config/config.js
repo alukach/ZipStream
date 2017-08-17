@@ -28,10 +28,10 @@ const envVarsSchema = Joi.object({
 }).required();
 
 const config = Joi.validate(
-  process.env, envVarsSchema, {stripUnknown: true},
+  process.env, envVarsSchema, { stripUnknown: true },
   (err, value) => {
     if (err) throw new Error(`Config validation error: ${err.message}`);
-    return value
+    return value;
   }
 );
 

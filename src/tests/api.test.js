@@ -12,7 +12,6 @@ import { Readable } from 'stream';
 
 import app from '../index';
 import { db, fs } from '../backends';
-import config from '../config/config';
 import { NotFound } from '../helpers/errors';
 
 
@@ -21,26 +20,26 @@ chai.config.includeStack = true;
 
 describe('## APIs', () => {
   const exampleBundle = {
-    "expirationDate" : '2017-08-24T17:33:35.961Z',
-    "secret" : "my-secret",
-    "filename" : "my-awesome-bundle.zip",
-    "files": [
+    expirationDate: '2017-08-24T17:33:35.961Z',
+    secret: 'my-secret',
+    filename: 'my-awesome-bundle.zip',
+    files: [
       {
-        "src": "s3://my-aws-bucket-1/path/to/foo.jpg",
-        "dst": "foo.jpg"
+        src: 's3://my-aws-bucket-1/path/to/foo.jpg',
+        dst: 'foo.jpg'
       },
       {
-        "src": "s3://some-other-bucket-2/bar.gif"
+        src: 's3://some-other-bucket-2/bar.gif'
       }
     ],
-    "id" : "my-long-id"
+    id: 'my-long-id'
   };
 
   describe('# POST /', () => {
-    const ENDPOINT = '/'
+    const ENDPOINT = '/';
 
     beforeEach(() => {
-      sinon.stub(db, "create");
+      sinon.stub(db, 'create');
     });
 
     afterEach(() => {
@@ -97,7 +96,7 @@ describe('## APIs', () => {
         .post(ENDPOINT)
         .send(exampleBundle)
         .expect(httpStatus.CREATED)
-        .then((res) => {
+        .then(() => {
           expect(db.create.args.length)
             .to.equal(1);
           expect(db.create.firstCall.args.length)
@@ -115,7 +114,7 @@ describe('## APIs', () => {
           expect(db.create.firstCall.args[0].filename)
             .to.equal(exampleBundle.filename);
           expect(db.create.firstCall.args[0].expirationDate)
-            .to.be.a('date')
+            .to.be.a('date');
           done();
         })
         .catch(done);
@@ -127,7 +126,7 @@ describe('## APIs', () => {
         .post(ENDPOINT)
         .send({ filename: exampleBundle.filename, files: 1 })
         .expect(httpStatus.BAD_REQUEST)
-        .then((res) => {
+        .then(() => {
           done();
         })
         .catch(done);
@@ -140,7 +139,7 @@ describe('## APIs', () => {
         .expect(httpStatus.BAD_REQUEST)
         .then((res) => {
           expect(res.body)
-            .to.deep.equal({ message: '"files" must be an array' })
+            .to.deep.equal({ message: '"files" must be an array' });
           done();
         })
         .catch(done);
@@ -153,7 +152,7 @@ describe('## APIs', () => {
         .expect(httpStatus.BAD_REQUEST)
         .then((res) => {
           expect(res.body)
-            .to.deep.equal({ message: '"src" is required' })
+            .to.deep.equal({ message: '"src" is required' });
           done();
         })
         .catch(done);
@@ -161,27 +160,27 @@ describe('## APIs', () => {
   });
 
   describe('# POST /bundle', () => {
-    const ENDPOINT = '/bundle'
+    const ENDPOINT = '/bundle';
 
     beforeEach(() => {
-      sinon.stub(db, "read");
-      sinon.stub(fs['s3'], "getStream");
+      sinon.stub(db, 'read');
+      sinon.stub(fs.s3, 'getStream');
     });
 
     afterEach(() => {
       db.read.restore();
-      fs['s3'].getStream.restore();
+      fs.s3.getStream.restore();
     });
 
     it('should return zipped bundle', (done) => {
-      var stubStream = new Readable();
+      const stubStream = new Readable();
       stubStream.push('A stream of data');
       stubStream.push(null);
-      fs['s3'].getStream.returns(stubStream);
+      fs.s3.getStream.returns(stubStream);
 
       const expectedStreamLookups = [
-        [ exampleBundle.files[0].src ],
-        [ exampleBundle.files[1].src ],
+        [exampleBundle.files[0].src],
+        [exampleBundle.files[1].src],
       ];
 
       request(app)
@@ -191,7 +190,7 @@ describe('## APIs', () => {
         .then((res) => {
           expect(db.read.args.length)
             .to.equal(0);
-          expect(fs['s3'].getStream.args)
+          expect(fs.s3.getStream.args)
             .to.deep.equal(expectedStreamLookups);
           expect(res.text)
             .to.include('PK\u0003\u0004\u0014\u0000\b\u0000\b\u0000');
@@ -210,7 +209,7 @@ describe('## APIs', () => {
         .expect(httpStatus.BAD_REQUEST)
         .then((res) => {
           expect(res.body)
-            .to.deep.equal({ message: '"files" is required' })
+            .to.deep.equal({ message: '"files" is required' });
           done();
         })
         .catch(done);
@@ -223,7 +222,7 @@ describe('## APIs', () => {
         .expect(httpStatus.BAD_REQUEST)
         .then((res) => {
           expect(res.body)
-            .to.deep.equal({ message: '"files" must be an array' })
+            .to.deep.equal({ message: '"files" must be an array' });
           done();
         })
         .catch(done);
@@ -236,7 +235,7 @@ describe('## APIs', () => {
         .expect(httpStatus.BAD_REQUEST)
         .then((res) => {
           expect(res.body)
-            .to.deep.equal({ message: '"src" is required' })
+            .to.deep.equal({ message: '"src" is required' });
           done();
         })
         .catch(done);
@@ -244,32 +243,31 @@ describe('## APIs', () => {
   });
 
   describe('# GET /:id', () => {
-
     beforeEach(() => {
-      sinon.stub(db, "read");
-      sinon.stub(fs['s3'], "getStream");
+      sinon.stub(db, 'read');
+      sinon.stub(fs.s3, 'getStream');
     });
 
     afterEach(() => {
       db.read.restore();
-      fs['s3'].getStream.restore();
+      fs.s3.getStream.restore();
     });
 
     it('should return zipped bundle', (done) => {
       db.read.resolves(exampleBundle);
 
-      var stubStream = new Readable();
+      const stubStream = new Readable();
       stubStream.push('A stream of data');
       stubStream.push(null);
-      fs['s3'].getStream.returns(stubStream);
+      fs.s3.getStream.returns(stubStream);
 
       const expectedDbReads = [
-        [ { id: exampleBundle.id }, false ]
+        [{ id: exampleBundle.id }, false]
       ];
 
       const expectedStreamLookups = [
-        [ exampleBundle.files[0].src ],
-        [ exampleBundle.files[1].src ],
+        [exampleBundle.files[0].src],
+        [exampleBundle.files[1].src],
       ];
 
       request(app)
@@ -278,7 +276,7 @@ describe('## APIs', () => {
         .then((res) => {
           expect(db.read.args)
             .to.deep.equal(expectedDbReads);
-          expect(fs['s3'].getStream.args)
+          expect(fs.s3.getStream.args)
             .to.deep.equal(expectedStreamLookups);
           expect(res.text)
             .to.include('PK\u0003\u0004\u0014\u0000\b\u0000\b\u0000');
@@ -317,7 +315,7 @@ describe('## APIs', () => {
 
   describe('# GET /:id/:secret', () => {
     beforeEach(() => {
-      sinon.stub(db, "read");
+      sinon.stub(db, 'read');
     });
 
     afterEach(() => {
@@ -371,7 +369,7 @@ describe('## APIs', () => {
 
   describe('# PUT /:id/:secret', () => {
     beforeEach(() => {
-      sinon.stub(db, "update");
+      sinon.stub(db, 'update');
     });
 
     afterEach(() => {
@@ -393,7 +391,7 @@ describe('## APIs', () => {
         .put(`/${exampleBundle.id}/${exampleBundle.secret}`)
         .send({ files: exampleBundle.files })
         .expect(httpStatus.OK)
-        .then((res) => {
+        .then(() => {
           expect(db.update.firstCall.args.length)
             .to.equal(1);
           expect(db.update.firstCall.args)
@@ -406,7 +404,7 @@ describe('## APIs', () => {
 
   describe('# DELETE /:id/:secret', () => {
     beforeEach(() => {
-      sinon.stub(db, "delete");
+      sinon.stub(db, 'delete');
     });
 
     afterEach(() => {
@@ -426,7 +424,7 @@ describe('## APIs', () => {
       request(app)
         .delete(`/${exampleBundle.id}/${exampleBundle.secret}`)
         .expect(httpStatus.OK)
-        .then((res) => {
+        .then(() => {
           expect(db.delete.firstCall.args.length)
             .to.equal(1);
           expect(db.delete.firstCall.args)

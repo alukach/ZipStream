@@ -10,3 +10,4 @@ git:
   depth: 3
 script:
   - yarn test:check-coverage
+  - yarn lint

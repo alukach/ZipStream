@@ -1,9 +1,9 @@
-import sinon from 'sinon';
-import chai, { expect } from 'chai';
-import { Readable } from 'stream';
+// import sinon from 'sinon';
+// import chai, { expect } from 'chai';
+// import { Readable } from 'stream';
 
 
-chai.config.includeStack = true;
+// chai.config.includeStack = true;
 
 
 describe('## DB Backend: postgres', () => {
