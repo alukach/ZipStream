@@ -4,6 +4,34 @@
 
 A microservice to build and stream dynamically zipped bundles of remote files. The service does not store files, rather it stores references to files which it can stream in a zipped package to users. Designed to be backend-swappable, it is capable of working with just about any database and any filestore. It aims to be fast, have a low memory footprint, and to support tens-of-thousands of concurrent connections <sup>[[citation needed]](https://github.com/Cadasta/ZipStream/issues/8)</sup>.
 
+---
+
+* [Use case](#use-case)
+* [Supported backends](#supported-backends)
+  * [Database backend](database-backend)
+  * [Filestore backend](filestore-backend)
+* [Models](#models)
+  * [`FileRef`](#fileref)
+  * [`Bundle`](#bundle)
+* [Usage](#usage)
+  * [One-off Zip Creation](#one-off-zip-creation)
+  * [Create Bundle](#create-bundle)
+  * [Download Bundle](#download-bundle)
+  * [Get Bundle Information](#get-bundle-information)
+  * [Update Bundle](#update-bundle)
+  * [Delete Bundle](#delete-bundle)
+* [Getting Started](#getting-started)
+* [Logging](#logging)
+* [Code Coverage](#code-coverage)
+* [Docker](#docker)
+* [FAQ](#faq)
+* [Contributing](#contributing)
+* [Attributions](#attributions)
+* [History](#history)
+* [License](#license)
+
+
+---
 
 ## Use case
 
@@ -64,6 +92,7 @@ To add support for a new database backend, a file should be placed in the `backe
 #### Currently supported database backends:
 
 - Amazon DynamoDB
+- Postgresql
 
 To see what's on the database backends radar, see our [Issues](https://github.com/Cadasta/ZipStream/issues?q=is%3Aopen+label%3Aenhancement+label%database).
 
@@ -76,6 +105,7 @@ To add support for a new filestore backend, a file should be placed in the `back
 #### Currently supported filestore backends:
 
 - Amazon S3
+- HTTPS
 
 To see what's on the filestore backends radar, see our [Issues](https://github.com/Cadasta/ZipStream/issues?q=is%3Aopen+label%3Aenhancement+label%3Afilestore).
 
@@ -500,6 +530,13 @@ Pull Requests are very welcome! If you would like to add a new feature, it is re
 
 Inspired by [Teamwork's s3zipper](https://github.com/Teamwork/s3zipper). Built from the [express-mongoose-es6-rest-api boilerplate](https://github.com/KunalKapadia/express-mongoose-es6-rest-api).
 
+## History
+
+For the list of all changes see the [CHANGELOG](CHANGELOG.md).
+
+## License
+
+[GNU Affero General Public License](LICENSE).
 
 [`FileRef`]: #fileref
 [`Bundle`]: #bundle
