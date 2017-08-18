@@ -56,7 +56,7 @@ function streamToRes(res, next, files, filename = '') {
       .on('error', (err) => {
         res.status(500);
         return next(err);
-      })
+      });
 
     archive.append(data, { name: dst, prefix: zipDir });
   }
@@ -128,10 +128,9 @@ const bundleCtrl = {
    */
   bundle: (req, res, next) => {
     try {
-      streamToRes(res, next, req.body.files)
-    }
-    catch (e) {
-      next(e)
+      streamToRes(res, next, req.body.files);
+    } catch (e) {
+      next(e);
     }
   },
 };

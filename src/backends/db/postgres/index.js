@@ -26,7 +26,7 @@ export default class PostgresDb {
       fetch: loadSql('./sql/fetch.sql'),
       update: loadSql('./sql/update.sql'),
       delete: loadSql('./sql/delete.sql'),
-    }
+    };
 
     this.errors = errors;
   }
@@ -44,7 +44,7 @@ export default class PostgresDb {
   }
 
   create(val) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       this.db.none(this.cmds.create, val)
         .then(() => resolve(val))
         .catch(this.formatError);
