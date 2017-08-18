@@ -289,7 +289,7 @@ describe('## APIs', () => {
         .catch(done);
     });
 
-    it('should handle bad combinations w/ 404', (done) => {
+    it('should handle bad id w/ 404', (done) => {
       db.read.rejects(NotFound);
       request(app)
         .get('/abcd')
