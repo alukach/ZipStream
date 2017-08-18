@@ -91,8 +91,8 @@ To add support for a new database backend, a file should be placed in the `backe
 
 #### Currently supported database backends:
 
-- Amazon DynamoDB
-- Postgresql
+- [Amazon DynamoDB](https://aws.amazon.com/dynamodb/)
+- [Postgresql](https://www.postgresql.org/)
 
 To see what's on the database backends radar, see our [Issues](https://github.com/Cadasta/ZipStream/issues?q=is%3Aopen+label%3Aenhancement+label%database).
 
