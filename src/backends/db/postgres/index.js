@@ -18,47 +18,55 @@ export default class PostgresDb {
   constructor(config, errors) {
     const pgp = pgPromise();
     this.db = pgp({ database: config.DB_NAME });
-    this.sql = sqlLoader.bind(this, config.TABLE_NAME);
+
+    const loadSql = sqlLoader.bind(this, config.TABLE_NAME);
+    this.cmds = {
+      create: loadSql('./sql/create.sql'),
+      fetch_w_secret: loadSql('./sql/fetch_w_secret.sql'),
+      fetch: loadSql('./sql/fetch.sql'),
+      update: loadSql('./sql/update.sql'),
+      delete: loadSql('./sql/delete.sql'),
+    }
+
     this.errors = errors;
   }
 
+  /**
+   * Recast exeptions as exceptions that will be handled by middleware.
+   * @param  {err} err Error to be reformatted
+   * @throws {err}     Middleware-friendly error
+   */
   formatError(err) {
     if (err.code === queryResultErrorCode.noData) {
-      return this.errors.NotFound;
+      throw this.errors.NotFound;
     }
-    return err;
+    throw err;
   }
 
   create(val) {
     return new Promise((resolve, reject) => {
-      this.db.none(this.sql('./sql/create.sql'), val)
+      this.db.none(this.cmds.create, val)
         .then(() => resolve(val))
-        .catch(err => reject(err));
+        .catch(this.formatError);
     });
   }
 
   read({ id, secret = null }, checkPass = true) {
     const sql = checkPass ?
-      this.sql('./sql/fetch_w_secret.sql') :
-      this.sql('./sql/fetch.sql');
+      this.cmds.fetch_w_secret :
+      this.cmds.fetch;
     const params = Object.assign({ id }, checkPass ? { secret } : { });
     return this.db.one(sql, params)
-      .catch((err) => {
-        throw this.formatError(err);
-      });
+      .catch(this.formatError);
   }
 
   update(val) {
-    return this.db.one(this.sql('./sql/update.sql'), val)
-      .catch((err) => {
-        throw this.formatError(err);
-      });
+    return this.db.one(this.cmds.update, val)
+      .catch(this.formatError);
   }
 
   delete(val) {
-    return this.db.one(this.sql('./sql/delete.sql'), val)
-      .catch((err) => {
-        throw this.formatError(err);
-      });
+    return this.db.one(this.cmds.delete, val)
+      .catch(this.formatError);
   }
 }
