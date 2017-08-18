@@ -10,7 +10,7 @@ const s3 = new AWS.S3();
 export default {
   getStream(src) {
     const bucket = parse(src).host;
-    const key = parse(src).path;
+    const key = parse(src).path.replace(/^\/|\/$/g, ''); // Strip slashes
     return s3
       .getObject({ Bucket: bucket, Key: key })
       .createReadStream();
