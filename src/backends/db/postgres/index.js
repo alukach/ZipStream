@@ -17,7 +17,7 @@ function sqlLoader(tableName, file) {
 export default class PostgresDb {
   constructor(config, errors) {
     const pgp = pgPromise();
-    this.db = pgp({ database: config.DB_NAME });
+    this.db = pgp(config.DB_CNXN);
 
     const loadSql = sqlLoader.bind(this, config.TABLE_NAME);
     this.cmds = {

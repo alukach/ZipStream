@@ -6,29 +6,30 @@ A microservice to build and stream dynamically zipped bundles of remote files. T
 
 ---
 
-* [Use case](#use-case)
-* [Supported backends](#supported-backends)
-  * [Database backend](database-backend)
-  * [Filestore backend](filestore-backend)
-* [Models](#models)
-  * [`FileRef`](#fileref)
-  * [`Bundle`](#bundle)
-* [Usage](#usage)
-  * [One-off Zip Creation](#one-off-zip-creation)
-  * [Create Bundle](#create-bundle)
-  * [Download Bundle](#download-bundle)
-  * [Get Bundle Information](#get-bundle-information)
-  * [Update Bundle](#update-bundle)
-  * [Delete Bundle](#delete-bundle)
-* [Getting Started](#getting-started)
-* [Logging](#logging)
-* [Code Coverage](#code-coverage)
-* [Docker](#docker)
-* [FAQ](#faq)
-* [Contributing](#contributing)
-* [Attributions](#attributions)
-* [History](#history)
-* [License](#license)
+* [Use case]
+* [Supported backends]
+  * [Database backend]
+  * [Filestore backend]
+* [Models]
+  * [`FileRef`]
+  * [`Bundle`]
+* [Configuration]
+* [API]
+  * [One-off Zip Creation]
+  * [Create Bundle]
+  * [Download Bundle]
+  * [Get Bundle Information]
+  * [Update Bundle]
+  * [Delete Bundle]
+* [Getting Started]
+* [Logging]
+* [Code Coverage]
+* [Docker]
+* [FAQ]
+* [Contributing]
+* [Attributions]
+* [History]
+* [License]
 
 
 ---
@@ -92,20 +93,31 @@ To add support for a new database backend, a file should be placed in the `backe
 #### Currently supported database backends:
 
 - [Amazon DynamoDB](https://aws.amazon.com/dynamodb/)
+  - Requires `DB_INTERFACE` [config] variable to equal `'dynamodb'`.
+  - Requires `TABLE_NAME` [config] variable to be set.
+  - Requires `AWS_REGION` [config] variable to be set.
 - [Postgresql](https://www.postgresql.org/)
+  - Requires `DB_INTERFACE` [config] variable to equal `'postgres'`.
+  - Requires `DB_CNXN` [config] variable to be set.
+  - Requires `TABLE_NAME` [config] variable to be set.
 
 To see what's on the database backends radar, see our [Issues](https://github.com/Cadasta/ZipStream/issues?q=is%3Aopen+label%3Aenhancement+label%database).
 
 ### Filestore backend
 
-The filestore backend is responsible for returning files in a [Readable stream](https://nodejs.org/api/stream.html#stream_readable_streams) format.
+The filestore backend is responsible for returning files in a [Readable stream](https://nodejs.org/api/stream.html#stream_readable_streams) format. Multiple filestore backends may be enabled. When examining an submitted [`FileRef`], the system will look for a backend matching the protocol of the `src` attribute (e.g. a `src` of `s3://myBucket/my/key.jpg` would use the `s3` backend).
 
-To add support for a new filestore backend, a file should be placed in the `backends/fs` directory and offer a single function: `getStream`. This functino should take in a `src` argument and return a readable stream.
+To add support for a new filestore backend, a file should be placed in the `backends/fs` directory and offer a single function: `getStream`. This function should take in a `src` argument and return a readable stream.
 
 #### Currently supported filestore backends:
 
 - [Amazon S3](https://aws.amazon.com/s3/)
+  - Requires `FS_INTERFACES` [config] variable to contain `'s3'`.
+  - Requires `AWS_REGION` [config] variable to be set.
+  - Expects [`FileRef`] `src` attributes in the format of `s3://<bucketName>/<key>`.
 - HTTP(S) - Any valid URL
+  - Requires `FS_INTERFACES` [config] variable to contain `'https'`.
+  - Expects [`FileRef`] `src` attributes in the format of `<http|https>://<path>`.
 
 To see what's on the filestore backends radar, see our [Issues](https://github.com/Cadasta/ZipStream/issues?q=is%3Aopen+label%3Aenhancement+label%3Afilestore).
 
@@ -115,18 +127,30 @@ To see what's on the filestore backends radar, see our [Issues](https://github.c
 ### `FileRef`
 
 - `src`: `String`, protocol and location of file (depending on backend), such as S3 Bucket
-- `dst`: `String`, _optional_, desired path of file when in bundle, defaults to `path` value
+- `dst`: `String`, _optional_, desired path of file when in bundle, defaults to path of `src` value
 
 ### `Bundle`
 
 - `id`: `String`, UUIDv4
 - `secret`: `String`, UUIDv4
 - `files`: `Array`, [`FileRef`] objects
-- `expirationDate`: `Number`, unix timestamp representing date at which record should be deleted. Note that the codebase does not manage the removal of expired bundles. It is up to individual backends to set up expiration logic via TTL or database trigger settings
+- `expirationDate`: `Number`, unix timestamp representing date at which record should be deleted.
 - `filename`: `String`, desired filename of bundle (should end with .zip)
 
 
-## Usage
+## Configuration
+
+- `NODE_ENV`: `String`, environment mode of server. Defaults to `'development'`. ([read more](https://www.dynatrace.com/blog/the-drastic-effects-of-omitting-node_env-in-your-express-js-applications/))
+- `PORT`: `Number`, port number for zipstream server. Defaults to `4040`.
+- `DB_INTERFACE`: `String`, name of database backend to be used by zipstream instance. Defaults to `'postgres'`.
+- `FS_INTERFACES`: `String`, comma-separated names of filestore backends to be supported by zipstream instance. Defaults to `'s3,https'`.
+- `DB_CNXN`: `String`, [Connection string](https://github.com/vitaly-t/pg-promise/wiki/Connection-Syntax#connection-string) used to connect to Postgres database backend. Defaults to `'postgres://localhost:5432/zipstream'`.
+- `AWS_REGION`: `String`, AWS Region to be used by S3 filestore backend and DynamoDB database backend. Defaults to `'us-west-2'`.
+- `TABLE_NAME`: `String`, Name of table used by filestore backend. Defaults to `'bundles'`.
+- `DATA_LIFETIME`: `Number`, Lifespan of `Bundle` record, in minutes.  Defaults to `10080` (1 week). Note that the codebase does not manage the removal of expired bundles. It is up to individual backends to set up expiration logic via TTL or database trigger settings
+
+
+## API
 
 ### One-off Zip Creation
 
@@ -142,8 +166,8 @@ Returns a bundle of provided files.
 {
     "files": [
         {
-            "src": "[protocol and location of file (depending on backend), such as S3 Bucket]",
-            "dst": "[optional, desired path of file when in bundle, defaults to 'path' value ]"
+            "src": "[protocol and filestore-backend-related location of file]",
+            "dst": "[optional, desired path of file when in bundle, defaults to path of `src` value]"
         }
     ]
 }
@@ -199,8 +223,8 @@ Or, optionally:
     "filename": "[desired filename of bundle]",
     "files": [
         {
-            "src": "[protocol and location of file (depending on backend), such as S3 Bucket]",
-            "dst": "[optional, desired path of file when in bundle, defaults to 'path' value ]"
+            "src": "[protocol and filestore-backend-related location of file]",
+            "dst": "[optional, desired path of file when in bundle, defaults to path of `src` value]"
         }
     ]
 }
@@ -313,8 +337,8 @@ Append files a bundle.
 {
     "files": [
         {
-            "src": "[protocol and location of file (depending on backend), such as S3 Bucket]",
-            "dst": "[optional, desired path of file when in bundle, defaults to 'path' value ]"
+            "src": "[protocol and filestore-backend-related location of file]",
+            "dst": "[optional, desired path of file when in bundle, defaults to path of `src` value]"
         }
     ]
 }
@@ -540,3 +564,28 @@ For the list of all changes see the [CHANGELOG](CHANGELOG.md).
 
 [`FileRef`]: #fileref
 [`Bundle`]: #bundle
+
+[config]: #configuration
+
+[Use case]: #use-case
+[Supported backends]: #supported-backends
+[Database backend]: #database-backend
+[Filestore backend]: #filestore-backend
+[Models]: #models
+[Configuration]: #configuration
+[API]: #api
+[One-off Zip Creation]: #one-off-zip-creation
+[Create Bundle]: #create-bundle
+[Download Bundle]: #download-bundle
+[Get Bundle Information]: #get-bundle-information
+[Update Bundle]: #update-bundle
+[Delete Bundle]: #delete-bundle
+[Getting Started]: #getting-started
+[Logging]: #logging
+[Code Coverage]: #code-coverage
+[Docker]: #docker
+[FAQ]: #faq
+[Contributing]: #contributing
+[Attributions]: #attributions
+[History]: #history
+[License]: #license

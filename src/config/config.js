@@ -12,14 +12,14 @@ const envVarsSchema = Joi.object({
     .default(4040),
 
   DB_INTERFACE: Joi.string()
-    .default('dynamodb'),
+    .default('postgres'),
   FS_INTERFACES: Joi.string()
-    .default('s3, https'),
+    .default('s3,https'),
 
-  DB_NAME: Joi.string()
-    .default('zipstream'),
+  DB_CNXN: Joi.string()
+    .default('postgres://localhost:5432/zipstream'),
   TABLE_NAME: Joi.string()
-    .default('zipstream-bundles'),
+    .default('bundles'),
   DATA_LIFETIME: Joi.number()  // in minutes
     .default(60 * 24 * 7),
 
