@@ -1,6 +1,6 @@
 # ZipStream Service
 
-[![Build Status](https://travis-ci.org/Cadasta/cadasta-workertoolbox.svg?branch=master)](https://travis-ci.org/Cadasta/cadasta-workertoolbox)
+[![Build Status](https://travis-ci.org/Cadasta/ZipStream.svg?branch=master)](https://travis-ci.org/Cadasta/ZipStream)
 
 A microservice to build and stream dynamically zipped bundles of remote files. The service does not store files, rather it stores references to files which it can stream in a zipped package to users. Designed to be backend-swappable, it is capable of working with just about any database and any filestore. It aims to be fast, have a low memory footprint, and to support tens-of-thousands of concurrent connections <sup>[[citation needed]](https://github.com/Cadasta/ZipStream/issues/8)</sup>.
 
