@@ -6,7 +6,7 @@ A microservice to build and stream dynamically zipped bundles of remote files. T
 
 ---
 
-* [Use case]
+* [Use cases]
 * [Supported backends]
   * [Database backend]
   * [Filestore backend]
@@ -34,11 +34,16 @@ A microservice to build and stream dynamically zipped bundles of remote files. T
 
 ---
 
-## Use case
+## Use cases
 
-Imagine that you store thousands of files on Amazon S3 for a client. The client occasionally asks you to make a subset of their files available for download. A simple solution to this would be to manually download these files, bundle them up as a zip file, upload the zip file to S3, and send a link of zip on S3 to your client. ZipStream aims to simplify this by allowing you to submit references of the client's files to ZipStream and send your client a link the bundle's identifier. When your client visits the link, a zip file of the S3 assets will be generated on the fly and streamed to the user.
+### Assembling a bundle for later
 
-Naturally, if the zipped bundle is to be downloaded many times over, it's likely more efficient to actually generate the zip file once, store it in a filestore, and send the client a link to that file. In this case, it would be better to use ZipStream's `/bundle` endpoint for a one-time generation of the to-be-shared zip file. This could be done efficiently via streaming from one service to the other:
+Consider a situation where you store millions of files on Amazon S3 for a client. The client occasionally asks you to make a subset of their files available for download. ZipStream aims to simplify this by allowing you to submit references of the client's files to ZipStream and send your client a link the bundle's identifier. When your client visits the link, a zip file containing all of the S3 assets will be streamed to the user. Because of the fact that the service retrieves the remote data in small chunks, zips it, and streams it to users on the fly, the memory overhead is extremely low and zipfiles have no max filesize.
+
+Naturally, if the zipped bundle is to be downloaded many times over, it's likely more efficient to actually generate the zipped bundle once, store it in a filestore, and send the client a URI to that zipped file. In this case, it would be better to use ZipStream's `/bundle` endpoint for a one-time generation of the to-be-shared zip file. This could be done efficiently via streaming from one service to the other.
+
+<details>
+ <summary>Example</summary>
 
 ```js
 var AWS = require('aws-sdk');
@@ -78,7 +83,12 @@ var outStream = s3Stream(awsConn)
 // Send it
 inStream.pipe(outStream)
 ```
+</details>
 
+
+### Bundling on the fly
+
+Consider a situation where you would like to allow a customer to export a number of files of their choosing, perhaps in a shopping-cart fashion. Zipstream makes this simple by having a [one-off zip creation] endpoint that expects a `POST` request containing reference to externally hosted files and responds with a streamed zip of these files. Using this, a developer can set up a webform to enable users to select files of their liking and to initiate the download on submit.
 
 ## Supported backends
 
@@ -160,7 +170,10 @@ Returns a bundle of provided files.
 
 **Method** : `POST`
 
-**Data constraints**
+<details>
+  <summary>
+    <b>Data constraints</b>
+  </summary>
 
 ```json
 {
@@ -172,8 +185,12 @@ Returns a bundle of provided files.
     ]
 }
 ```
+</details>
 
-**Data example**
+<details>
+ <summary>
+  <b>Data example</b>
+ </summary>
 
 ```json
 {
@@ -188,6 +205,8 @@ Returns a bundle of provided files.
     ]
 }
 ```
+</details>
+
 
 #### Success Response
 
@@ -208,7 +227,10 @@ Creates a bundle.
 
 **Method** : `POST`
 
-**Data constraints**
+<details>
+  <summary>
+    <b>Data constraints</b>
+  </summary>
 
 ```json
 {
@@ -229,12 +251,16 @@ Or, optionally:
     ]
 }
 ```
+</details>
 
-**Data example**
+<details>
+ <summary>
+  <b>Data example</b>
+ </summary>
 
 ```json
 {
-    "filename": "`",
+    "filename": "my-awesome-bundle.zip",
     "files": [
         {
             "src": "s3://my-aws-bucket-1/path/to/foo.jpg",
@@ -246,6 +272,8 @@ Or, optionally:
     ]
 }
 ```
+</details>
+
 
 #### Success Response
 
@@ -253,7 +281,10 @@ JSON representation of created bundle.
 
 **Code** : `201 CREATED`
 
-**Content example**
+<details>
+  <summary>
+    <b>Content example</b>
+  </summary>
 
 ```json
 {
@@ -272,6 +303,7 @@ JSON representation of created bundle.
    "id" : "c4f6f218-afc4-4af1-ae1b-b22e9b058f26"
 }
 ```
+</details>
 
 ### Download Bundle
 
@@ -303,7 +335,10 @@ JSON representation of retrieved bundle.
 
 **Code** : `200 OK`
 
-**Content example**
+<details>
+  <summary>
+    <b>Content example</b>
+  </summary>
 
 ```json
 {
@@ -322,6 +357,7 @@ JSON representation of retrieved bundle.
    "id" : "c4f6f218-afc4-4af1-ae1b-b22e9b058f26"
 }
 ```
+</details>
 
 ### Update Bundle
 
@@ -331,7 +367,10 @@ Append files a bundle.
 
 **Method** : `PUT`
 
-**Data constraints**
+<details>
+  <summary>
+    <b>Data constraints</b>
+  </summary>
 
 ```json
 {
@@ -343,12 +382,17 @@ Append files a bundle.
     ]
 }
 ```
+</details>
 
-**Data example**
+
+<details>
+ <summary>
+  <b>Data example</b>
+ </summary>
 
 ```json
 {
-    "filename": "`",
+    "filename": "my-awesome-bundle.zip",
     "files": [
         {
             "src": "s3://one-more-bucket-3/another/file.pdf",
@@ -357,6 +401,8 @@ Append files a bundle.
     ]
 }
 ```
+</details>
+
 
 #### Success Response
 
@@ -364,7 +410,10 @@ JSON representation of bundle with newly-appended data.
 
 **Code** : `200 OK`
 
-**Content example**
+<details>
+  <summary>
+    <b>Content example</b>
+  </summary>
 
 ```json
 {
@@ -387,6 +436,7 @@ JSON representation of bundle with newly-appended data.
    "id" : "c4f6f218-afc4-4af1-ae1b-b22e9b058f26"
 }
 ```
+</details>
 
 ### Delete Bundle
 
@@ -402,7 +452,10 @@ JSON representation of deleted bundle.
 
 **Code** : `200 OK`
 
-**Content example**
+<details>
+  <summary>
+    <b>Content example</b>
+  </summary>
 
 ```json
 {
@@ -425,6 +478,7 @@ JSON representation of deleted bundle.
    "id" : "c4f6f218-afc4-4af1-ae1b-b22e9b058f26"
 }
 ```
+</details>
 
 
 ## Getting Started
@@ -567,7 +621,7 @@ For the list of all changes see the [CHANGELOG](CHANGELOG.md).
 
 [config]: #configuration
 
-[Use case]: #use-case
+[Use cases]: #use-cases
 [Supported backends]: #supported-backends
 [Database backend]: #database-backend
 [Filestore backend]: #filestore-backend
