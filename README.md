@@ -177,6 +177,7 @@ Returns a bundle of provided files.
 
 ```json
 {
+    "filename": "[optional, filename of zip to be returned]",
     "files": [
         {
             "src": "[protocol and filestore-backend-related location of file]",
