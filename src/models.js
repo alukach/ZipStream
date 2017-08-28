@@ -29,6 +29,7 @@ const Bundle = {
     .default(getExpirationDate, 'expiration date'),
   filename: Joi
     .string()
+    .default('bundle.zip')
 };
 
 export default { FileRef, Bundle };

@@ -68,7 +68,7 @@ const bundleCtrl = {
    */
   bundle: (req, res, next) => {
     try {
-      streamToRes(res, next, req.body.files);
+      streamToRes(res, next, req.body.files, req.body.filename);
     } catch (e) {
       next(e);
     }

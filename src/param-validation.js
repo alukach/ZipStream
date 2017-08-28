@@ -12,6 +12,7 @@ export default {
   // POST /bundle
   instantDownloadBundle: {
     body: {
+      filename: Bundle.filename,
       files: Bundle.files.required(),
     },
   },

@@ -192,6 +192,41 @@ describe('## APIs', () => {
             .to.equal(0);
           expect(fs.s3.getStream.args)
             .to.deep.equal(expectedStreamLookups);
+          expect(res.headers['content-disposition'])
+            .to.equal('attachment; filename="bundle.zip"');
+          expect(res.text)
+            .to.include('PK\u0003\u0004\u0014\u0000\b\u0000\b\u0000');
+          expect(res.text)
+            .to.include('foo.jpg');
+          expect(res.text)
+            .to.include('bar.gif');
+          done();
+        })
+        .catch(done);
+    });
+
+    it('should return zipped bundle with custom filename', (done) => {
+      const stubStream = new Readable();
+      stubStream.push('A stream of data');
+      stubStream.push(null);
+      fs.s3.getStream.returns(stubStream);
+
+      const expectedStreamLookups = [
+        [exampleBundle.files[0].src],
+        [exampleBundle.files[1].src],
+      ];
+
+      request(app)
+        .post(ENDPOINT)
+        .send({ files: exampleBundle.files, filename: 'my-bundle.zip' })
+        .expect(httpStatus.OK)
+        .then((res) => {
+          expect(db.read.args.length)
+            .to.equal(0);
+          expect(fs.s3.getStream.args)
+            .to.deep.equal(expectedStreamLookups);
+          expect(res.headers['content-disposition'])
+            .to.equal('attachment; filename="my-bundle.zip"');
           expect(res.text)
             .to.include('PK\u0003\u0004\u0014\u0000\b\u0000\b\u0000');
           expect(res.text)
@@ -278,6 +313,8 @@ describe('## APIs', () => {
             .to.deep.equal(expectedDbReads);
           expect(fs.s3.getStream.args)
             .to.deep.equal(expectedStreamLookups);
+          expect(res.headers['content-disposition'])
+            .to.equal('attachment; filename="my-awesome-bundle.zip"');
           expect(res.text)
             .to.include('PK\u0003\u0004\u0014\u0000\b\u0000\b\u0000');
           expect(res.text)
