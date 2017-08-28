@@ -48,6 +48,7 @@ function streamToRes(res, next, files, filename = '') {
         message: `Protocol '${protocol}' not supported.`
       });
     }
+    winston.debug(`Enqueueing '${src}'`);
     const data = _interface
       .getStream(src)
       // Reject seems to be useless once data has started to be streamed

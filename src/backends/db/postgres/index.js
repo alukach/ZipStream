@@ -44,10 +44,10 @@ export default class PostgresDb {
   }
 
   create(val) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       this.db.none(this.cmds.create, val)
         .then(() => resolve(val))
-        .catch(this.formatError);
+        .catch(reject);
     });
   }
 
