@@ -3,16 +3,18 @@ import { parse } from 'url';
 import winston from 'winston';
 import archiver from 'archiver';
 
+import util from 'archiver-utils';
+
 import { fs } from '../backends';
 
 
-function streamToRes(res, next, files, filename = '') {
+function streamToResponse(response, next, files, filename = '') {
   const archive = archiver('zip', {
     zlib: { level: 9 }
   });
 
-  res.attachment(filename);
-  res.contentType('application/octet-stream');
+  response.attachment(filename);
+  response.contentType('application/octet-stream');
 
   archive
     .on('warning', (err) => {
@@ -24,7 +26,7 @@ function streamToRes(res, next, files, filename = '') {
     })
     .on('error', next);
   archive
-    .pipe(res);
+    .pipe(response);
 
   // Remove files that repeat earlier `dst` values
   const filesMap = new Map();
@@ -37,9 +39,36 @@ function streamToRes(res, next, files, filename = '') {
     }
   }
 
-  // Enqueue streams
-  const zipDir = filename.replace(/\.[^/.]+$/, '');
-  for (const [dst, src] of filesMap) {
+  const queue = Array.from(filesMap);
+
+  new Promise((resolve, reject) => {
+    // Setup archive to trigger next request after each file is added
+    archive
+      .on('entry', function(entryData) {
+        var data = queue.pop();
+        if (data === undefined) {
+          return resolve()
+        }
+        return fetch(data)
+         .catch(reject);
+      })
+
+    // Initiate requests
+    if (queue.length === 0) return reject("Empty queue");
+    return fetch(queue.pop())
+      .catch(reject);
+  })
+  .then(values => {
+    console.log("Finalized");
+    archive.finalize();
+  })
+  .catch(err => {
+    console.error(err);
+    archive.abort();
+  })
+
+  function fetch(data) {
+    const [dst, src] = data;
     const protocol = parse(src).protocol.split(':')[0];
     const _interface = fs[protocol];
     if (_interface === undefined) {
@@ -47,21 +76,18 @@ function streamToRes(res, next, files, filename = '') {
         message: `Protocol '${protocol}' not supported.`
       });
     }
-    winston.debug(`Enqueueing '${src}'`);
-    const data = _interface
-      .getStream(src)
-      // Reject seems to be useless once data has started to be streamed
-      // to the response object. Instead, use `next`
-      // https://github.com/expressjs/express/issues/2700
-      .on('error', (err) => {
-        res.status(500);
-        return next(err);
-      });
-
-    archive.append(data, { name: dst, prefix: zipDir });
+    console.log('fetching ' + dst + ': ' + src);
+    // winston.debug(`Enqueueing '${src}'`);
+    return Promise.all([
+      dst,
+      _interface.get(src)
+    ])
+    .then(data => {
+      const [dst, srcStream] = data;
+      archive.append(srcStream, { name: dst, prefix: 'out' });
+    })
   }
-  archive.finalize();
   return archive;
 }
 
-export default { streamToRes };
+export default { streamToResponse };

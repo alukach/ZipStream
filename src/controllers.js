@@ -2,7 +2,7 @@ import Joi from 'joi';
 
 import { Bundle } from './models';
 import { db } from './backends';
-import { streamToRes } from './helpers/stream';
+import { streamToResponse } from './helpers/stream';
 
 
 const bundleCtrl = {
@@ -58,7 +58,7 @@ const bundleCtrl = {
    */
   download: (req, res, next) => (
     db.read(req.params, false)
-      .then(val => streamToRes(res, next, val.files, val.filename))
+      .then(val => streamToResponse(res, next, val.files, val.filename))
       .catch(next)
   ),
 
@@ -68,11 +68,11 @@ const bundleCtrl = {
    */
   bundle: (req, res, next) => {
     try {
-      streamToRes(res, next, req.body.files, req.body.filename);
+      streamToResponse(res, next, req.body.files, req.body.filename);
     } catch (e) {
       next(e);
     }
   },
 };
 
-export default { bundleCtrl, streamToRes };
+export default { bundleCtrl, streamToResponse };

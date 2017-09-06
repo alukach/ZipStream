@@ -3,7 +3,7 @@
   "version": "1.0.2",
   "description": "A service to create and stream zipped S3 downloads to a user.",
   "main": "src/index.js",
-  "license": "GNU Affero General Public License v3.0",
+  "license": "AGPL-3.0",
   "author": "Anthony Lukach",
   "private": false,
   "engines": {
