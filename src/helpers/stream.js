@@ -1,5 +1,6 @@
 import { parse } from 'url';
 
+import async from 'async';
 import winston from 'winston';
 import archiver from 'archiver';
 
@@ -22,8 +23,7 @@ function streamToRes(res, next, files, filename = '') {
         next(err);
       }
     })
-    .on('error', next);
-  archive
+    .on('error', next)
     .pipe(res);
 
   // Remove files that repeat earlier `dst` values
@@ -37,8 +37,7 @@ function streamToRes(res, next, files, filename = '') {
     }
   }
 
-  // Enqueue streams
-  const zipDir = filename.replace(/\.[^/.]+$/, '');
+  // Validate sources
   for (const [dst, src] of filesMap) {
     const protocol = parse(src).protocol.split(':')[0];
     const _interface = fs[protocol];
@@ -47,7 +46,13 @@ function streamToRes(res, next, files, filename = '') {
         message: `Protocol '${protocol}' not supported.`
       });
     }
-    winston.debug(`Enqueueing '${src}'`);
+  }
+
+  const zipDir = filename.replace(/\.[^/.]+$/, '');
+  const finalize = () => archive.finalize();
+  async.eachLimit(filesMap, 1, ([dst, src], handleNext) => {
+    const protocol = parse(src).protocol.split(':')[0];
+    const _interface = fs[protocol];
     const data = _interface
       .getStream(src)
       // Reject seems to be useless once data has started to be streamed
@@ -56,12 +61,11 @@ function streamToRes(res, next, files, filename = '') {
       .on('error', (err) => {
         res.status(500);
         return next(err);
-      });
-
+      })
+      .on('end', handleNext);
     archive.append(data, { name: dst, prefix: zipDir });
-  }
-  archive.finalize();
-  return archive;
+
+  }, finalize);
 }
 
 export default { streamToRes };
