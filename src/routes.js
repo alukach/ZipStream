@@ -5,6 +5,11 @@ import { bundleCtrl } from './controllers';
 
 const router = express.Router(); // eslint-disable-line new-cap
 
+/** Get /favicon.ico - Send empty response */
+router.get('/favicon.ico', (req, res) =>
+  res.sendStatus(204)
+);
+
 /** GET /health-check - Check service health */
 router.get('/health-check', (req, res) =>
   res.send('OK')
