@@ -1,13 +1,13 @@
-// import sinon from 'sinon';
-// import chai, { expect } from 'chai';
-// import { Readable } from 'stream';
-
-
-// chai.config.includeStack = true;
+import { expect } from 'chai';
+import { getStream, IpAddressError } from '../backends/fs/https';
 
 
 describe('## FS Backend: https', () => {
-  describe('# Whitelist sources', () => {
-
+  describe('# fs.getStream', () => {
+    it('should create bundle', (done) => {
+      expect(() => getStream('http://169.254.169.254/latest/dynamic/instance-identity/'))
+        .to.throw(IpAddressError);
+      done();
+    });
   });
 });

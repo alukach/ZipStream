@@ -36,6 +36,7 @@
     "express-winston": "^2.4.0",
     "helmet": "^3.8.1",
     "http-status": "^1.0.1",
+    "is-ip": "^2.0.0",
     "joi": "^10.6.0",
     "lazy-modules": "^1.0.0",
     "method-override": "^2.3.9",

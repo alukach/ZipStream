@@ -125,7 +125,7 @@ To add support for a new filestore backend, a file should be placed in the `back
   - Requires `FS_INTERFACES` [config] variable to contain `'s3'`.
   - Requires `AWS_REGION` [config] variable to be set.
   - Expects [`FileRef`] `src` attributes in the format of `s3://<bucketName>/<key>`.
-- HTTP(S) - Any valid URL
+- HTTP(S) - Any valid URL. _For security reasons, IP addresses are not supported_
   - Requires `FS_INTERFACES` [config] variable to contain `'https'`.
   - Expects [`FileRef`] `src` attributes in the format of `<http|https>://<path>`.
 
