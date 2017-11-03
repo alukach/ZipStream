@@ -1,4 +1,4 @@
-DROP TABLE "bundles";
+DROP TABLE IF EXISTS "bundles";
 CREATE TABLE "bundles" (
     id              text PRIMARY KEY NOT NULL,
     secret          text NOT NULL,
