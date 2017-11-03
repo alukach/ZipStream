@@ -17,8 +17,8 @@ install:
   - docker build --cache-from $DOCKER_IMG_BRANCH -t $DOCKER_IMG_BRANCH .
 script:
   - echo "Building $DOCKER_IMG_BRANCH ($TRAVIS_COMMIT)"
-  - docker run $DOCKER_IMG_BRANCH yarn test:coverage
-  - docker run $DOCKER_IMG_BRANCH yarn lint
+  - docker run -t $DOCKER_IMG_BRANCH yarn test:coverage
+  - docker run -t $DOCKER_IMG_BRANCH yarn lint
 after_success:
   - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
     docker push $DOCKER_IMG_BRANCH;
