@@ -522,16 +522,13 @@ Tests:
 # Run tests written in ES6
 yarn test
 
-# Run test along with code coverage
+# Run test along with enforced code coverage (configured via package.json)
 yarn test:coverage
 
 # Run tests on file change
 yarn test:watch
-
-# Run tests enforcing code coverage (configured via .istanbul.yml)
-yarn test:check-coverage
 ```
-_NOTE: Full test coverage [to come shortly](https://github.com/Cadasta/ZipStream/issues/9)_
+_TODO: [Full test coverage](https://github.com/Cadasta/ZipStream/issues/9)_
 
 Lint:
 ```sh

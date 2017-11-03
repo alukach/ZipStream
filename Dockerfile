@@ -1,4 +1,4 @@
-FROM node:latest
+FROM node:8
 
 # Set the working directory
 WORKDIR /opt/zipstream
@@ -14,10 +14,9 @@ COPY --chown=user:user yarn.lock .
 RUN yarn
 
 # Build
-COPY --chown=user:user ./src ./src
-COPY --chown=user:user ./gulpfile.babel.js .
+COPY --chown=user:user src ./src
+COPY --chown=user:user gulpfile.babel.js .
 RUN yarn build
-RUN rm -rf $PWD/src
 
 # Run server when the container launches
 ENV PORT=4040

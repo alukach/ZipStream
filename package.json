@@ -18,9 +18,10 @@
     "lint": "esw *.js src --color",
     "lint:watch": "yarn lint -- --watch",
     "test": "cross-env NODE_ENV=test ./node_modules/.bin/mocha --ui bdd --reporter spec --colors --compilers js:babel-core/register src/tests --recursive",
+    "test:dist": "cross-env NODE_ENV=test ./node_modules/.bin/mocha --ui bdd --reporter spec --colors --compilers js:babel-core/register dist/tests --recursive",
     "test:watch": "yarn test -- --watch",
-    "test:coverage": "cross-env NODE_ENV=test ./node_modules/.bin/istanbul cover _mocha -- --ui bdd --reporter spec --colors --compilers js:babel-core/register src/tests --recursive",
-    "test:check-coverage": "yarn test:coverage && istanbul check-coverage",
+    "test:coverage": "./node_modules/.bin/nyc yarn test",
+    "test:check-coverage": "yarn test:coverage && ./node_modules/.bin/nyc check-coverage",
     "report-coverage": "coveralls < ./coverage/lcov.info"
   },
   "dependencies": {
@@ -70,8 +71,8 @@
     "gulp-sourcemaps": "^1.6.0",
     "gulp-util": "^3.0.7",
     "husky": "^0.13.1",
-    "istanbul": "1.1.0-alpha.1",
     "mocha": "3.2.0",
+    "nyc": "^11.3.0",
     "run-sequence": "^1.1.5",
     "sinon": "^3.2.0",
     "supertest": "2.0.1",
@@ -86,5 +87,13 @@
     "plugins": [
       "add-module-exports"
     ]
+  },
+  "nyc": {
+    "check-coverage": true,
+    "per-file": false,
+    "lines": 83.98,
+    "functions": 80.56,
+    "branches": 53.23,
+    "statements": 83.26
   }
 }
