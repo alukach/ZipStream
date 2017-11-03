@@ -9,9 +9,9 @@ env:
     - DOCKER_IMG_BRANCH=$DOCKER_REPO:${TRAVIS_BRANCH//\//.}
     - secure: LFY4DBBI6vl7OoSTxamBEagCjFRD34rGRF5rdFNvN/8EGZFikIF0w7qM9JEfvVFNQYbnvLmC8pMJA9vDuJpGS4vQhp9D13wd/muZINTXWNOLJTBapprW1eOvxsZOVha5hACpxeWyqcuIe0C5YnSOCdw34DcaHwZrzyLNJh6Sa8OydzmUqSgrPPsGczSLul++bB8bNI6bvT6F6PE+HCwawSRdp6A8BPKq76U9nqT/ewlr59c3QOeL/cGXIp/v1IYADhkz16KhX9KoYu9WlnXyCfd+DAhzCxWRQMHdfNmDZY2M5WuKbSzh8D0hPTDE8DWgd9vC4Mzn4etdlirfDYMCJDuU8Z07UD7/AF7rXp9RMF1cJKb7PykZ0m/tddUn0lf+0Z6wuwNLQvm/73UJ3QgIWUeGj9zU7lRqvBPyGC5X9C7wUN21Xazw46Vwb01bSBFN7aVqLeDBhZAfc3pfDoMGUn5gGQiSv51wqC+uiA1CilTUY7TD/pKyckLJeb/0X1h2Raj5HjuM90bHOoJDTvjQ4ATSiG4kLYiRcMuJivAo4eA46Q6sq5vR810qLLAt/xaQE/gGA4r90j2R0DFGxdv7Ae7sIUsckH+xppX6HS/G02zFLbFTcOvNaB9/CeFIUGekP9Uv08e/aAIHSTWp5/2AJcpz3NJ661ZHo/IfY8YBeMQ= # DOCKER_USERNAME
     - secure: dRyrNxZCW+qofiTReNgiyYbCEHXlU44n8SE+8zavI2KJUScS8s+OEXga3ituOhTO+72d60D1WMuMN38dhQ52WSwpW7mG4sR7FnVpio481WSplVDtFWtVDZjn7z6mNBppU0ZWVgG/0Skss3GXhHoM9BoPh71u2v4SytJQ+pGsiJl5CoGUzdo9mHNfWfaGtO72wbK71F8iYaue89z/bkneveNXXWMlzH33kC9aRyzin129O7pSXFqZvZZOLPbp21GQsr7+yfD1+PtCc13M46zIzlASo+LNaoAJvtVoAFBUmdzsyjiGY0nIDVU5gczo2GemrIvQQTlUV8CthROtM81uBHoMZZ1WvQJre+RmPf4kk1pyn6GtlBy+K8Pw59WC/vD7e1OLpVwQ/H3pRqET7dBu6f+CLn+bHFmjRG2mtZMedViDGS2yRlGCqVHQ0q3W4EV+jUovT22x3v49dT+NYiuQ1QCqlgN6Vv40vywdberG5uuqZbiPGYeeMNJzuJ6mxNQjyJmOlOWI+xfh1448y88c+F62eSFPj4YobkBMeuWQjmWkg3MFsAEdaphRQaoytHlkDjOKplPev0hdRtSMyhJrbclqV3+9EgDAzr1z0Y6c5Mr0dCSaHS9oxtg5Oolzb1cHepSiKVwZzb2aPAo+Rd3IrlpLJJWyrbFBWt+FTwUZPRQ= # DOCKER_PASSWORD
-# before_install:
-#   - sudo apt-get update
-#   - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
+before_install:
+  - sudo apt-get update
+  - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
 install:
   - docker pull $DOCKER_IMG_BRANCH || docker pull $DOCKER_REPO:master || docker pull $DOCKER_REPO || true
   - docker build --cache-from $DOCKER_IMG_BRANCH -t $DOCKER_IMG_BRANCH .
