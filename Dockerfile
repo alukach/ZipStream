@@ -17,7 +17,7 @@ RUN yarn
 COPY --chown=user:user src ./src
 COPY --chown=user:user gulpfile.babel.js .
 RUN yarn build
-COPY --chown=user:user .eslintrc .
+COPY --chown=user:user .eslintrc getversion ./
 
 
 # Run server when the container launches

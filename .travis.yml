@@ -6,23 +6,59 @@ services:
 env:
   global:
     - DOCKER_REPO=cadasta/zipstream
-    - DOCKER_IMG_BRANCH=$DOCKER_REPO:${TRAVIS_BRANCH//\//.}
+    - GIT_REPO=$DOCKER_REPO
+    - DOCKER_TAGGED_REPO=$DOCKER_REPO:${TRAVIS_BRANCH//\//.} # Replace slashes with periods
+    # DOCKER_USERNAME
     - secure: CM/uUNVWMidna83BB+nnfe90h5u8fSxF/rFr+fr6DZK6fjnrq8/N5v6l+VvFGsNlxq66uLB5wYa3u7zQyvMP76YnbqNzZcunGd0q5YAZ/mIQXioqosxtx8tlYGDtr8JLuI2SQR0G/a3XYp9g9fEWABM3qoD3rMY4SiXBK1i4UL+CrxegfiifTSkMybH6paFcrhR4qwe7oJuuRPEdNOVfu77/+HRh8yP/uEpk41vVSNWL25bJsF4T4ej/r4MjhCqkuOsJXFGq0oEjcnPcq9sMruiR1Y9PbmhPJjNY0HyTS6aEBlsb8yRJ+519FkiM+2TPAXDxi62CxojSDjhTzu2EBkwmjuLWaH3LLrUfyVu1V3V41TTlGIYmYeE53pgFkkimRTEhWCtSPrsZbrfiZFs3g+HvS0tH7nyaru6Lx4a1yvsQzC42YqyxvrcNn3J3yhvPCywDv7jdtoVBDy8JoZT5OXSdFGX483LJNigszTJg7xDt0j81QUQS/Tb39agsiY4Aslwnlc7EIa4bgqos1eSfmGQOBX6KyfvGA/pUAJ5FnDeXj/qh/Qr5c5b0knCVhD75MpkWBr2JzPf4e07BQsxb9VQC1gF80EpZRn+db+dn8uKRbrA4VABAVi0olBDqOKaEK9Ect3QuFJiGYziGM+IHD4ZpylD7DxYmkUBSoMcAQhc=
+    # DOCKER_PASSWORD
     - secure: PzsPaWJenXFygE4CC7fls5vMzMsqmoxbOjnD99LSy26TAPVaI83dFZ6MQcmUDDhWt3htHxmO+hwpZfiikwwQ5VQLtBhA1BBjQyO8f5YG6UPidT1J3YQaNoLoZLQDWyZUMBBC314RFnw3ITm0pKrRsX2wY8rz0x0Td5ZTSmxy3+bRZkERyslYyL+4kq+qj3wiLMwki8lsdwRDG+/w2Q9OtXNuq7ky3bREWi3t1mix7go2xSRZPYW048yGoIwceTdldEKFuQJ1TXKh+yuzJNEOiY3fB50qOgFrbxkupiIJXCV6sFzxp//lFx/Sb/MzdcJcGqNT2NAniG9WbM/nU+8mV5EY06YjTLdVySZpXLAniLs2KWM/AhJo/p5u7p4/fonVAymQfHfD6fFiUEjzo88lj0uvEF5ZmHGxSzFisTaxqelE0HqgFJjIr9BrvrEbYeDJ07ZZfdLRXd8gH2ntHnZW+k+gY2XCX4J9L8vx5g+yygDf6UjkuNg83VNgKgNFqn+Mb17SnPYsAlcWOidCTOSssPgV+ttwr8n3n4D1+G5oxOqXKxlbG9R3y34LPsERSj3OOaF+IpujRb8lfT0ZnuQyc/wOHiSgm8IdpWE92sgPIgCBRHfTkfBYx8QaR8idBLki+AjD9Dm3LMyDDDjcWxAovWp8/gzCOcA3QXymE7wd7rM=
+    # GITHUB_TOKEN
+    - secure: smV8446JCRQtcM6IIa0+bl1xCuVfbr0bqyhLe/+eN2Scmt9QvJWGXqiAQoNMR+8B8rMsGtu3wiUulmuWsoDugFqnB2oAj5ZI32gJojxujLcGlnzI+qxZ523ZpfhdfnI/MzsoIEXrnfudz+53i5Fyju914J83FtMhxMhaBWcpSGhV5z4PhcifE2TSUZYNOnP6zaFqEA5BwDXFDU90mzq/M0Bnd/kI3d/ZOadUGrJqmzwlbM0w4a0ztHiPwnNG+IjTWpIHr9LXxYqwns51sza7QbwjiSfWBRHXZhkXDehHIack9l/NG/vZM5855el3yO3tgJzFNr/ZToepK5HanHDEHWV3U4qBLAa6ugPoyByXPcAdjdQ5VkNWaXDovNNv0Rm2rfXJQuAmYYHy2MOI/nMw/EytOp8pP1fbnIOHgoDlTSt4lVFiZjisJkW6xANFIfyriknhfdIpqZpargtEPOF1Ywsk1T2pdbVP3Hh2oOR2bPkafmWrfCvFcw676QXFbkEYMt4b11zWYvZki0sHTq9EMhRFdiiukpePp5BrJeMCLGLpTNX0TResJkCuNd1fryBI8WBcUWDqLyYBOJdgKFbK5NQfx9f+Z74tAi/tg+GRjopRsmt4yxoSv4KtlcgwdawkAaCZMzrj7etchCkpiqlZHCDuXLu9W2NhUe5WwvVwkrM=
 before_install:
+  # Upgrade Docker
   - sudo apt-get update
   - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
 install:
-  - docker pull $DOCKER_IMG_BRANCH || docker pull $DOCKER_REPO:master || docker pull $DOCKER_REPO || true
-  - docker build --cache-from $DOCKER_IMG_BRANCH -t $DOCKER_IMG_BRANCH .
+  - echo "Building $DOCKER_TAGGED_REPO ($TRAVIS_COMMIT)"
+  - docker pull $DOCKER_TAGGED_REPO || docker pull $DOCKER_REPO:master || docker pull $DOCKER_REPO || true
+  - docker build --cache-from $DOCKER_TAGGED_REPO -t $DOCKER_TAGGED_REPO .
 script:
-  - echo "Building $DOCKER_IMG_BRANCH ($TRAVIS_COMMIT)"
-  - docker run -t $DOCKER_IMG_BRANCH yarn test:coverage
-  - docker run -t $DOCKER_IMG_BRANCH yarn lint
+  # Test
+  - docker run -t $DOCKER_TAGGED_REPO yarn test:coverage
+  - docker run -t $DOCKER_TAGGED_REPO yarn lint
 after_success:
+  # Push to docker
   - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
-    docker push $DOCKER_IMG_BRANCH;
-  - if [ "$TRAVIS_BRANCH" == "master" ]; then
-      docker tag $DOCKER_IMG_BRANCH $DOCKER_REPO;
+    docker push $DOCKER_TAGGED_REPO;
+
+   # Read version
+  - |
+    if [ $TRAVIS_BRANCH == "master" ]; then
+      export VERSION=$(docker run -t $DOCKER_TAGGED_REPO ./getversion);
+      echo "Tagging with version: $VERSION";
+    fi
+  - if [ $TRAVIS_BRANCH == "master" ]; then
+      docker tag $DOCKER_TAGGED_REPO $DOCKER_REPO;
       docker push $DOCKER_REPO;
+    fi
+
+  # Tag docker build w/ latest and version
+  - |
+    if [ $TRAVIS_BRANCH == "master" ]; then
+      if curl --head --fail "https://hub.docker.com/v2/repositories/${DOCKER_REPO}/tags/${VERSION}/"; then
+        echo "Tag ${VERSION} already exists on Docker, not tagging with version..."
+      else
+        docker tag $DOCKER_TAGGED_REPO $DOCKER_REPO:$VERSION;
+      fi
+      docker tag $DOCKER_TAGGED_REPO $DOCKER_REPO:latest;
+      docker push $DOCKER_REPO;
+    fi
+
+  # Tag git repo with version
+  - |
+    if [ $TRAVIS_BRANCH == "master" ]; then
+      git config --global user.email "builds@travis-ci.com";
+      git config --global user.name "Travis CI";
+      git tag $VERSION -a -m "Generated tag from TravisCI build $TRAVIS_BUILD_NUMBER";
+      git push --tags https://${GITHUB_TOKEN}@github.com/${GIT_REPO}.git;
     fi
