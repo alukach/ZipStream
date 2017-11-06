@@ -1,0 +1,3 @@
+#!/usr/bin/env node
+var package = require('./package.json');
+process.stdout.write(package.version);
