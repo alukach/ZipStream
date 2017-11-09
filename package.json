@@ -93,9 +93,9 @@
   "nyc": {
     "check-coverage": true,
     "per-file": false,
-    "lines": 83.49,
-    "functions": 80.56,
-    "branches": 52.17,
-    "statements": 82.82
+    "lines": 83,
+    "functions": 82,
+    "branches": 53,
+    "statements": 83
   }
 }
