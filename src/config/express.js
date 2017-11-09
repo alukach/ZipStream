@@ -1,22 +1,28 @@
+import opbeat from 'opbeat/start';
 import express from 'express';
-import logger from 'morgan';
+import morganLogger from 'morgan';
 import bodyParser from 'body-parser';
 import compress from 'compression';
 import methodOverride from 'method-override';
 import cors from 'cors';
+import path from 'path';
+import favicon from 'serve-favicon';
 import httpStatus from 'http-status';
 import expressWinston from 'express-winston';
 import expressValidation from 'express-validation';
 import helmet from 'helmet';
-import winstonInstance from './logger';
+import { logger, errlogger } from './logger';
 import routes from '../routes';
 import config from './config';
 import { APIError } from '../helpers/errors';
 
+
 const app = express();
 
 if (config.NODE_ENV === 'development') {
-  app.use(logger('dev'));
+  app.use(morganLogger('dev'));
+} else if (config.NODE_ENV !== 'test') {
+  app.use(morganLogger('combined'));
 }
 
 // parse body params and attache them to req.body
@@ -27,19 +33,20 @@ app.use(compress());
 app.use(methodOverride());
 
 // secure apps by setting various HTTP headers
-app.use(helmet({
-  noCache: true,
-}));
+app.use(helmet({ noCache: true }));
 
 // enable CORS - Cross Origin Resource Sharing
 app.use(cors());
 
-// enable detailed API logging in dev env
+// serve favicon
+app.use(favicon(path.join(__dirname, '..', 'public', 'favicon.ico')));
+
+// enable detailed API request logging in dev env
 if (config.NODE_ENV === 'development') {
   expressWinston.requestWhitelist.push('body');
   expressWinston.responseWhitelist.push('body');
   app.use(expressWinston.logger({
-    winstonInstance,
+    winstonInstance: logger,
     meta: true, // optional: log meta data about request (defaults to true)
     msg: 'HTTP {{req.method}} {{req.url}} {{res.statusCode}} {{res.responseTime}}ms',
     colorStatus: true // Color the status code (default green, 3XX cyan, 4XX yellow, 5XX red).
@@ -63,20 +70,23 @@ app.use((err, req, res, next) => {
   return next(err);
 });
 
+// log errors to opbeat in production env
+if (config.NODE_ENV === 'production') {
+  app.use(opbeat.middleware.express());
+}
+
+// log errors in winston transports in dev env
+if (config.NODE_ENV === 'development') {
+  app.use(expressWinston.errorLogger({ winstonInstance: errlogger }));
+}
+
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
   const err = new APIError('API not found', httpStatus.NOT_FOUND);
   return next(err);
 });
 
-// log error in winston transports except when executing test suite
-if (config.NODE_ENV !== 'test') {
-  app.use(expressWinston.errorLogger({
-    winstonInstance
-  }));
-}
-
-// error handler, send stacktrace only during development
+// error handler, send stacktrace in response only during development
 app.use((err, req, res, next) => // eslint-disable-line no-unused-vars
   res.status(err.status).json(
     Object.assign(
@@ -86,5 +96,4 @@ app.use((err, req, res, next) => // eslint-disable-line no-unused-vars
     )
   )
 );
-
 export default app;
