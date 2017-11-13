@@ -12,13 +12,13 @@ import { Readable } from 'stream';
 
 import app from '../index';
 import { db, fs } from '../backends';
-import { NotFound } from '../helpers/errors';
+import { APIError } from '../helpers/errors';
 
 
 chai.config.includeStack = true;
 
 
-describe('## APIs', () => {
+describe('API:', () => {
   const exampleBundle = {
     expirationDate: '2017-08-24T17:33:35.961Z',
     secret: 'my-secret',
@@ -35,7 +35,7 @@ describe('## APIs', () => {
     id: 'my-long-id'
   };
 
-  describe('# POST /', () => {
+  describe('POST /', () => {
     const ENDPOINT = '/';
 
     beforeEach(() => {
@@ -159,7 +159,7 @@ describe('## APIs', () => {
     });
   });
 
-  describe('# POST /bundle', () => {
+  describe('POST /bundle', () => {
     const ENDPOINT = '/bundle';
 
     beforeEach(() => {
@@ -283,7 +283,7 @@ describe('## APIs', () => {
     });
   });
 
-  describe('# GET /:id', () => {
+  describe('GET /:id', () => {
     beforeEach(() => {
       sinon.stub(db, 'read');
       sinon.stub(fs.s3, 'getStream');
@@ -336,7 +336,7 @@ describe('## APIs', () => {
     });
 
     it('should handle bad id w/ 404', (done) => {
-      db.read.rejects(NotFound);
+      db.read.rejects(new APIError('Not Found', 404));
       request(app)
         .get('/abcd')
         .expect(httpStatus.NOT_FOUND)
@@ -359,7 +359,7 @@ describe('## APIs', () => {
     });
   });
 
-  describe('# GET /:id/:secret', () => {
+  describe('GET /:id/:secret', () => {
     beforeEach(() => {
       sinon.stub(db, 'read');
     });
@@ -391,7 +391,7 @@ describe('## APIs', () => {
     });
 
     it('should handle bad combinations w/ 404', (done) => {
-      db.read.rejects(NotFound);
+      db.read.rejects(new APIError('Not Found', 404));
 
       const expectedDbReads = [
         { id: 'abcd', secret: 'efgh' }
@@ -413,7 +413,7 @@ describe('## APIs', () => {
     });
   });
 
-  describe('# PUT /:id/:secret', () => {
+  describe('PUT /:id/:secret', () => {
     beforeEach(() => {
       sinon.stub(db, 'update');
     });
@@ -448,7 +448,7 @@ describe('## APIs', () => {
     });
   });
 
-  describe('# DELETE /:id/:secret', () => {
+  describe('DELETE /:id/:secret', () => {
     beforeEach(() => {
       sinon.stub(db, 'delete');
     });
@@ -481,7 +481,7 @@ describe('## APIs', () => {
     });
 
     it('should handle bad combinations w/ 404', (done) => {
-      db.delete.rejects(NotFound);
+      db.delete.rejects(new APIError('Not Found', 404));
 
       const expectedDbDelete = [
         {

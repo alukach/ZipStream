@@ -22,16 +22,27 @@ class ExtendableError extends Error {
 class APIError extends ExtendableError {
   /**
    * Creates an API error.
-   * @param {string} message - Error message.
-   * @param {number} status - HTTP status code of error.
-   * @param {boolean} isPublic - Whether the message should be visible to user or not.
+   * @param {string}  message   Error message.
+   * @param {number}  status    HTTP status code of error.
+   * @param {boolean} isPublic  Whether the message should be visible to user or not.
    */
   constructor(message, status = httpStatus.INTERNAL_SERVER_ERROR, isPublic = false) {
     super(message, status, isPublic);
   }
 }
 
-const NotFound = new APIError(
-  'No bundle found matching provided id and secret', httpStatus.NOT_FOUND);
+/**
+ * Get value from provided env variable or throw error.
+ * @param  {string} Env variable name to be retrieved
+ * @return {string} Retrieved env variable
+ * @throws {Error}  If no variable is set in environment
+ */
+const fromEnv = (param) => {
+  const value = process.env[param];
+  if (value === undefined) {
+    throw new Error(`${param} unset in environment or configuration`);
+  }
+  return value;
+};
 
-export default { APIError, NotFound };
+export default { APIError, fromEnv };

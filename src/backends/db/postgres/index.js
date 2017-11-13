@@ -3,6 +3,8 @@ import path from 'path';
 import pgPromise from 'pg-promise';
 import { queryResultErrorCode } from 'pg-promise/lib/errors';
 
+import { APIError, fromEnv } from '../../../helpers/errors';
+
 
 function sqlLoader(tableName, file) {
   const fullPath = path.join(__dirname, file);
@@ -15,11 +17,11 @@ function sqlLoader(tableName, file) {
 
 
 export default class PostgresDb {
-  constructor(config, errors) {
-    const pgp = pgPromise();
-    this.db = pgp(config.DB_CNXN);
+  constructor({ DB_CNXN = fromEnv('DB_CNXN'), TABLE_NAME = fromEnv('TABLE_NAME'), NODE_ENV }) {
+    const pgp = pgPromise({ noLocking: NODE_ENV === 'test' });  // Needed stub in testing
+    this.db = pgp(DB_CNXN);
 
-    const loadSql = sqlLoader.bind(this, config.TABLE_NAME);
+    const loadSql = sqlLoader.bind(this, TABLE_NAME);
     this.cmds = {
       create: loadSql('./sql/create.sql'),
       fetch_w_secret: loadSql('./sql/fetch_w_secret.sql'),
@@ -27,8 +29,6 @@ export default class PostgresDb {
       update: loadSql('./sql/update.sql'),
       delete: loadSql('./sql/delete.sql'),
     };
-
-    this.errors = errors;
   }
 
   /**
@@ -36,11 +36,11 @@ export default class PostgresDb {
    * @param  {err} err Error to be reformatted
    * @throws {err}     Middleware-friendly error
    */
-  formatError(err) {
+  formatError(err) {  // eslint-disable-line class-methods-use-this
     if (err.code === queryResultErrorCode.noData) {
-      throw this.errors.NotFound;
+      throw new APIError(err.message, 404);
     }
-    throw err;
+    throw new APIError(err.message, 500);
   }
 
   create(val) {

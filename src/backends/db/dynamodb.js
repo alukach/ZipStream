@@ -1,21 +1,26 @@
 /* eslint no-param-reassign: ["error", { "props": false }] */
 import AWS from 'aws-sdk';
 
+import { APIError, fromEnv } from '../../helpers/errors';
+
 
 export default class DynamoDb {
-  constructor(config, errors) {
-    this.table = config.TABLE_NAME;
-    this.errors = errors;
-    AWS.config.region = config.AWS_REGION;
+  constructor({ TABLE_NAME = fromEnv('TABLE_NAME'), AWS_REGION = fromEnv('AWS_REGION') }) {
+    this.table = TABLE_NAME;
+    AWS.config.region = AWS_REGION;
     this.dynamoDb = new AWS.DynamoDB.DocumentClient();
   }
 
-  formatError(err) {
+  /**
+   * Recast exeptions as exceptions that will be handled by middleware.
+   * @param  {err} err Error to be reformatted
+   * @throws {err}     Middleware-friendly error
+   */
+  formatError(err) { // eslint-disable-line class-methods-use-this
     if (err.code === 'ConditionalCheckFailedException') {
-      return this.errors.NotFound;
+      throw new APIError(err.message, 404);
     }
-    err.status = err.statusCode;
-    return err;
+    throw new APIError(err.message, 500);
   }
 
   create(value) {

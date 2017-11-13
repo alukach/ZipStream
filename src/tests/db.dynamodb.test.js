@@ -6,5 +6,5 @@
 // chai.config.includeStack = true;
 
 
-describe('## DB Backend: dynamodb', () => {
+describe('DB Backend - dynamodb:', () => {
 });

@@ -5,8 +5,8 @@ import app from '../index';
 
 chai.config.includeStack = true;
 
-describe('## Misc', () => {
-  describe('# GET /', () => {
+describe('Misc:', () => {
+  describe('GET /', () => {
     it('should return 404 error', (done) => {
       request(app)
         .get('/')
@@ -19,7 +19,7 @@ describe('## Misc', () => {
     });
   });
 
-  describe('# GET /health-check', () => {
+  describe('GET /health-check', () => {
     it('should return OK', (done) => {
       request(app)
         .get('/health-check')
@@ -32,7 +32,7 @@ describe('## Misc', () => {
     });
   });
 
-  describe('# Error Handling', () => {
+  describe('Error Handling', () => {
     it('should handle express validation error - username is required', (done) => {
       request(app)
         .post('/')
