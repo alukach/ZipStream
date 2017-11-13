@@ -5,8 +5,9 @@ const logger = new (winston.Logger)({
   level: 'debug',
   transports: [
     new (winston.transports.Console)({
-      json: config.NODE_ENV === 'production',
+      json: true, //config.NODE_ENV === 'production',
       colorize: true,
+      stringify: (obj) => JSON.stringify(obj),
     })
   ]
 });
