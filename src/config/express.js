@@ -11,7 +11,7 @@ import httpStatus from 'http-status';
 import expressWinston from 'express-winston';
 import expressValidation from 'express-validation';
 import helmet from 'helmet';
-import { logger, errlogger } from './logger';
+import { logger } from './logger';
 import routes from '../routes';
 import config from './config';
 import { APIError } from '../helpers/errors';
@@ -49,7 +49,7 @@ if (config.NODE_ENV === 'development') {
     winstonInstance: logger,
     meta: true, // optional: log meta data about request (defaults to true)
     msg: 'HTTP {{req.method}} {{req.url}} {{res.statusCode}} {{res.responseTime}}ms',
-    colorStatus: true // Color the status code (default green, 3XX cyan, 4XX yellow, 5XX red).
+    colorStatus: true, // Color the status code (default green, 3XX cyan, 4XX yellow, 5XX red).
   }));
 }
 
@@ -73,11 +73,6 @@ app.use((err, req, res, next) => {
 // log errors to opbeat in production env
 if (config.NODE_ENV === 'production') {
   app.use(opbeat.middleware.express());
-}
-
-// log errors in winston transports in dev env
-if (config.NODE_ENV === 'development') {
-  app.use(expressWinston.errorLogger({ winstonInstance: errlogger }));
 }
 
 // catch 404 and forward to error handler
