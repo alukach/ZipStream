@@ -1,4 +1,4 @@
-import opbeat from 'opbeat/start';
+import Raven from 'raven';
 import express from 'express';
 import bodyParser from 'body-parser';
 import compress from 'compression';
@@ -17,6 +17,14 @@ import { APIError } from '../helpers/errors';
 
 
 const app = express();
+
+// log errors to Sentry in production env
+if (config.NODE_ENV === 'production') {
+  Raven.config().install();
+  app.use(Raven.requestHandler());
+  app.use(Raven.errorHandler());
+}
+
 
 // parse body params and attache them to req.body
 app.use(bodyParser.json());
@@ -88,12 +96,4 @@ app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
   return next(err);
 });
 
-// log errors to opbeat in production env
-if (config.NODE_ENV === 'production') {
-  const middleware = opbeat.middleware.express();
-  app.use((err, req, res, next) => {
-    if (err.status >= 500) return middleware(err, req, res, next);
-    return null;  // Error stops here
-  });
-}
 export default app;
