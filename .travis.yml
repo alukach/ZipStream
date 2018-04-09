@@ -19,7 +19,7 @@ before_install:
   - sudo apt-get update
   - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
 install:
-  - echo "Building $DOCKER_TAGGED_REPO ($TRAVIS_COMMIT)"
+  - echo "Building docker image $DOCKER_TAGGED_REPO ($TRAVIS_COMMIT)"
   - docker pull $DOCKER_TAGGED_REPO || docker pull $DOCKER_REPO:master || docker pull $DOCKER_REPO || true
   - docker build --cache-from $DOCKER_TAGGED_REPO -t $DOCKER_TAGGED_REPO .
 script:
@@ -29,7 +29,7 @@ script:
 after_success:
   # Push to docker
   - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
-    echo "Pushing $DOCKER_TAGGED_REPO";
+    echo "Pushing docker image $DOCKER_TAGGED_REPO";
     docker push $DOCKER_TAGGED_REPO;
 
    # Read version
