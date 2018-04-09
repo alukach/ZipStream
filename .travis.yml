@@ -29,17 +29,14 @@ script:
 after_success:
   # Push to docker
   - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+    echo "Pushing $DOCKER_TAGGED_REPO";
     docker push $DOCKER_TAGGED_REPO;
 
    # Read version
   - |
     if [ $TRAVIS_BRANCH == "master" ]; then
       export VERSION=$(docker run -t $DOCKER_TAGGED_REPO ./getversion);
-      echo "Tagging with version: $VERSION";
-    fi
-  - if [ $TRAVIS_BRANCH == "master" ]; then
-      docker tag $DOCKER_TAGGED_REPO $DOCKER_REPO;
-      docker push $DOCKER_REPO;
+      echo "Tagging docker image with version: $VERSION";
     fi
 
   # Tag docker build w/ latest and version
@@ -47,9 +44,11 @@ after_success:
     if [ $TRAVIS_BRANCH == "master" ]; then
       if curl --head --fail "https://hub.docker.com/v2/repositories/${DOCKER_REPO}/tags/${VERSION}/"; then
         echo "Tag ${VERSION} already exists on Docker, not tagging with version..."
-      else
+      else    
+        echo "Tagging docker image with version: $DOCKER_REPO:$VERSION";
         docker tag $DOCKER_TAGGED_REPO $DOCKER_REPO:$VERSION;
       fi
+      echo "Tagging docker image with version: $DOCKER_REPO:latest";
       docker tag $DOCKER_TAGGED_REPO $DOCKER_REPO:latest;
       docker push $DOCKER_REPO;
     fi
@@ -59,6 +58,7 @@ after_success:
     if [ $TRAVIS_BRANCH == "master" ]; then
       git config --global user.email "builds@travis-ci.com";
       git config --global user.name "Travis CI";
+      echo "Tagging git repo with version: $VERSION";
       git tag $VERSION -a -m "Generated tag from TravisCI build $TRAVIS_BUILD_NUMBER";
       git push --tags https://${GITHUB_TOKEN}@github.com/${GIT_REPO}.git;
     fi
