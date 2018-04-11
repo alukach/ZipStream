@@ -36,7 +36,7 @@ after_success:
   - |
     if [ $TRAVIS_BRANCH == "master" ]; then
       export VERSION=$(docker run -t $DOCKER_TAGGED_REPO ./getversion);
-      echo "Tagging docker image with version: $VERSION";
+      echo "Version: $VERSION";
     fi
 
   # Tag docker build w/ latest and version
